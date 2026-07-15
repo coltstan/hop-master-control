@@ -115,7 +115,7 @@ select:focus,input:focus{border-color:var(--goldD)}
       <h1>HOP://<span>MASTER-CONTROL</span></h1>
       <div class="sub">HALL OF PATHS · ENGINE TELEMETRY &amp; CONTROL TERMINAL</div>
     </div>
-    <div class="right">TARGET: visionary-lolly-3d978a.netlify.app<br>ENGINE: <b>HOPEngine + HOPGM</b> · LIVE &amp; EMBEDDED</div>
+    <div class="right">TARGET: hallofpaths.netlify.app · BUILD 2<br>ENGINE: <b>HOPEngine + HOPGM</b> · LIVE &amp; EMBEDDED</div>
   </div>
   <div id="cols">
     <div id="nav">
@@ -144,6 +144,29 @@ select:focus,input:focus{border-color:var(--goldD)}
 (function (root) {
 'use strict';
 
+/* Draft-prospect archetypes (2K/NBA flavored). rdy=readiness band (how NBA-ready, 0-1),
+   age band, dev multiplier. Readiness drives how close to his ceiling a rookie starts. */
+const ARCHETYPES={
+  generational:{rdy:[0.66,0.82],age:[19,19],dev:1.15,label:'Generational talent'},
+  phenom:      {rdy:[0.42,0.60],age:[19,19],dev:1.10,label:'One-and-done phenom'},
+  senior:      {rdy:[0.70,0.90],age:[22,23],dev:0.80,label:'Polished senior (NBA-ready)'},
+  specialist:  {rdy:[0.60,0.80],age:[20,21],dev:0.85,label:'Role-ready specialist'},
+  project:     {rdy:[0.14,0.34],age:[19,19],dev:1.12,label:'Raw project (boom-or-bust)'},
+  intl:        {rdy:[0.24,0.46],age:[19,20],dev:1.05,stash:true,label:'International stash'},
+  twoway:      {rdy:[0.18,0.40],age:[20,22],dev:0.95,label:'Two-way / G-League flier'}
+};
+const NBA_COMPS={
+  PG:['a pace-and-space lead guard','a downhill pick-and-roll creator','a pesky 3-and-D point','a pass-first floor general','a microwave scoring guard'],
+  SG:['a movement shooter','a two-way wing scorer','a shot-creating combo guard','a 3-and-D specialist','an explosive slasher'],
+  SF:['a switchable wing','a point-forward initiator','a 3-and-D connector','an athletic finisher','a shot-making wing'],
+  PF:['a stretch four','a switchable combo big','a rugged glass-cleaner','a play-finishing roll man','a face-up forward'],
+  C:['a rim-running lob threat','a stretch five','a defensive anchor','a back-to-the-basket hub','a mobile drop-coverage big']
+};
+function prospectComp(p){ const arr=NBA_COMPS[p.pos]||NBA_COMPS.SF; return arr[Math.floor(rand()*arr.length)]; }
+function weighted(pairs){ let t=0; for(const q of pairs)t+=q[1]; let r=rand()*t; for(const q of pairs){ if((r-=q[1])<=0) return q[0]; } return pairs[0][0]; }
+const PROSPECT_HOMES=['Chicago','Houston','Los Angeles','Atlanta','small-town Indiana','Brooklyn','rural Georgia','Toronto','Lagos','Belgrade','Paris','Melbourne','Dallas','Memphis','the DMV','Oakland','Lithuania','Spain','Australia','Philadelphia'];
+function prospectStory(p){ const A=ARCHETYPES[p.archetype]; return `${pick(PROSPECT_HOMES)} · ${A?A.label:'prospect'}`; }
+
 /* ---------- RNG (seeded, reproducible) ---------- */
 let _seed = 123456789;
 function setSeed(s){ _seed = (s>>>0) || 1; }
@@ -167,29 +190,92 @@ function rnd(x){ return Math.round(x); }
 function r1(x){ return Math.round(x*10)/10; }
 
 /* ---------- Names ---------- */
-const FIRST = ["Marcus","Tyrese","DeAndre","Cole","Jalen","Malik","Xavier","Devin","Andre","Quentin","Trey","Isaiah","Damon","Khalil","Brandon","Zion","Cameron","Darius","Elijah","Jaylen","Kobe","Amari","Terrence","Donovan","Shawn","Marcus","Reggie","Theo","Bryce","Nasir","Omar","Deon","Caleb","Jordan","Tyson","Rashad","Micah","Julian","Antoine","Kareem","Lonnie","Dominic","Preston","Vince","Gary","Hassan","Jamal","Roman","Chase","Andre","Keon","Dexter","Marquis","Solomon","Tobias","Emeka","Drew","Carson","Nate","Felix",
-  "Tyreke","Jaylen","Zaire","Kyrie","Shai","Ja","Jamarcus","Demarcus","Tariq","Rasheed","Zander","Cassius","Tre","Jaxon","Kason","Amari","Jaylin","Keyon","Demetrius","Marvin","Quincy","Rodney","Vernon","Wesley","Bishop","Cyrus","Dashawn","Eli","Frank","Gerald","Hakeem","Idris","Jabari","Kelvin","Leon","Mateo","Nico","Otis","Pierre","Rayan","Sefu","Tendai","Ugo","Vito","Wendell","Yannick","Zeke","Abdiel","Boris","Cedric","Darnell","Ezra","Finn","Giannis","Hugo","Ivan","Jovan","Kasper","Lorenzo","Magnus","Nikolai","Oskar","Pavel","Rafael","Santiago","Thiago","Viktor","Wei","Yuki","Bo","Caleb","Dane","Emmett","Foster","Grant","Harlan","Ira","Jonah","Knox","Lamar","Moses","Nehemiah","Orion","Phoenix","Quade","Ronan","Sage","Titus","Uriah","Vance","Watson","Xander","York","Zaid","Amir","Bilal","Cairo","Dakari","Enzo","Frederick","Gideon","Hendrix","Isaiah","Jericho","Kingston","Lennox","Maddox","Nasir","Onyx","Prince","Quinton","Royce","Stetson","Tucker","Uri","Vaughn","Wilder","Xavi","Yusuf","Zion"];
-const LAST = ["Vale","Brooks","Carter","Hayes","Ellis","Monroe","Bishop","Reyes","Coleman","Ford","Sloan","Jennings","Pierce","Okafor","Mensah","Caldwell","Sutton","Nash","Boateng","Diallo","Washington","Cross","Beckford","Mercer","Holloway","Fontaine","Adebayo","Sayer","Whitfield","Knox","Barrett"," Amadou".trim(),"Castille","Devereaux","Greer","Lindqvist","Ortega","Petrov","Quaye","Rasmussen","Salgado","Thiam","Underwood","Varga","Whitlock","Yamada","Zander","Acheampong","Belmonte","Cisse","Dembele","Fofana","Granger","Huxley","Ibrahim","Jovanovic","Kowalski",
-  "Banks","Stokes","Rhodes","Vaughn","Steele","Hendrix","Crawford","Mathis","Donovan","Calloway","Beasley","Holt","Maddox","Frazier","Givens","Lockhart","Marsh","Ridley","Nowak","Kaminski","Osei","Asante","Owusu","Nwosu","Eze","Obi","Achebe","Bamba","Toure","Keita","Traore","Sow","Ndiaye","Camara","Sane","Bautista","Espinoza","Carrillo","Delgado","Herrera","Jimenez","Maldonado","Quintero","Solano","Vega","Zamora","Nakamura","Tanaka","Watanabe","Suzuki","Park","Choi","Nguyen","Tran","Pham","Singh","Patel","Kapoor","O'Brien","O'Neill","Brennan","Donnelly","Flanagan","Murphy","Sullivan","Walsh","Kowalczyk","Nowicki","Wojcik","Zielinski","Andersson","Bergstrom","Johansson","Nilsson","Larsen","Christensen","Falk","Haas","Keller","Richter","Schmidt","Wagner","Brandt","Voss","Ackerman","Bellinger","Carver","Dunmore","Easton","Fairbanks","Grimaldi","Hargrove","Ivory","Larkin","Montgomery","Prescott","Rutherford","Sinclair","Thorne","Winslow"];
+const FIRST = [
+  "Marcus","Cole","Brandon","Cameron","Bryce","Caleb","Jordan","Tyson","Micah","Julian","Preston","Chase","Dexter","Drew","Carson","Nate","Felix","Grant",
+  "Foster","Emmett","Dane","Watson","Vance","Tucker","Wilder","Royce","Vaughn","Colton","Hunter","Cooper","Brady","Baker","Bo","Trevor","Sam","Mac",
+  "Kirk","Derek","Wyatt","Beau","Cash","Reid","Bennett","Griffin","Holden","Chandler","Gavin","Landon","Maddox","Weston","Zane","Jonah","Levi","Nash",
+  "Rhett","Sawyer","Tanner","Brooks","Camden","Easton","Kellen","Ledger","Porter","Rylan","Bodie","Crew","Dax","Jax","Kade","Ryder","Boone","Dutton",
+  "Gunner","Lane","Ace","Tyrese","DeAndre","Jalen","Malik","Xavier","Devin","Andre","Quentin","Trey","Isaiah","Damon","Khalil","Zion","Darius","Elijah",
+  "Jaylen","Amari","Terrence","Donovan","Shawn","Reggie","Theo","Nasir","Omar","Deon","Rashad","Antoine","Lonnie","Dominic","Vince","Gary","Jamal","Roman",
+  "Keon","Marquis","Solomon","Tobias","Tariq","Rasheed","Cassius","Tre","Kason","Keyon","Demetrius","Marvin","Quincy","Rodney","Vernon","Wesley","Cyrus","Dashawn",
+  "Kelvin","Leon","Sefu","Darnell","Lamar","Moses","Amir","Dakari","Gideon","Hendrix","Jericho","Kingston","Lennox","Prince","Quinton","Cedric","Deandre","Torrey",
+  "Keldon","Devonte","Bruce","Delon","Davion","Payton","Bones","Ayo","Coby","Kris","Immanuel","Precious","Herb","Dorian","Talen","Terance","Kentavious","Montrezl",
+  "Norman","Dennis","Terry","Miles","Trae","Cade","Scottie","Paolo","Jabari","Jaren","Jaden","Bam","Ja","Ausar","Amen","Cason","Trayce","Jarace",
+  "Dariq","Emoni","Scoot","Anfernee","Jaylin","Keegan","Tyrus","Jaeden","Kobe","Jaylon","Deni","Jaxson","Emory","Carlos","Miguel","Jose","Luis","Diego",
+  "Mateo","Santiago","Alejandro","Angel","Rafael","Ricardo","Sergio","Marco","Eduardo","Javier","Andres","Gabriel","Julio","Fernando","Cristian","Adrian","Manny","Francisco",
+  "Yordan","Ronald","Wander","Eugenio","Gleyber","Ozzie","Yoan","Randy","Elvis","Nestor","Rougned","Willy","Teoscar","Ketel","Jorge","Salvador","Yadier","Nolan",
+  "Bryan","Emmanuel","Esteban","Ismael","Joaquin","Leonel","Mauricio","Rodrigo","Tomas","Vicente","Camilo","Luka","Nikola","Kristaps","Domantas","Bojan","Goran","Dario",
+  "Bogdan","Vasilije","Alperen","Cedi","Furkan","Lauri","Petteri","Patrik","Elias","Rasmus","Viktor","Filip","Anton","Nikolaj","Mikael","Erik","Henrik","Lars",
+  "Sven","Gustav","Oskar","Magnus","Bjorn","Kasper","Frederik","Emil","Mathias","Nikolai","Pavel","Ivan","Dmitri","Sergei","Andrei","Nikita","Artem","Maxim",
+  "Boris","Lorenzo","Santino","Matteo","Alessandro","Thiago","Rafa","Killian","Evan","Nicolas","Guerschon","Timothe","Vincent","Frank","Rudy","Sekou","Moussa","Hamidou",
+  "Bilal","Ousmane","Ludovic","Axel","Mathis","Enzo","Hugo","Jules","Noa","Aleksej","Vlatko","Marko","Stefan","Milos","Aleksandar","Petar","Emeka","Chinedu",
+  "Ikenna","Obinna","Kelechi","Nnamdi","Ebuka","Femi","Tunde","Kwame","Kofi","Kwesi","Yaw","Kojo","Mamadou","Ibrahima","Cheikh","Serge","Pascal","Joel",
+  "Victor","Hakeem","Abdiel","Yannick","Tendai","Ugo","Jovan","Idris","Jabril","Zaire","Sadiq","Bakary","Amadou","Souleymane","Ismaila","Boubacar","Modou","Lamine",
+  "Rui","Yuta","Yuki","Wataru","Kai","Jin","Kenji","Hiro","Ren","Sora","Haru","Riku","Sung","Minjae","Jihoon","Arjun","Ravi","Dev",
+  "Rohan","Karan","Nikhil","Anand","Sunil","Amrit","Vijay","Sanjay","Rishi","Aarav","Kabir","Ishaan","Hassan","Yusuf","Rayan","Cairo","Uri","Zaid",
+  "Nasim","Karim","Sami","Faris","Zayd","Adil"];
+const LAST = [
+  "Vale","Carter","Hayes","Ellis","Monroe","Bishop","Coleman","Ford","Sloan","Jennings","Pierce","Caldwell","Sutton","Cross","Beckford","Mercer","Holloway","Sayer",
+  "Whitfield","Knox","Barrett","Castille","Greer","Underwood","Whitlock","Banks","Stokes","Rhodes","Steele","Crawford","Calloway","Beasley","Holt","Frazier","Givens","Lockhart",
+  "Marsh","Ridley","Bellinger","Carver","Dunmore","Fairbanks","Hargrove","Ivory","Larkin","Montgomery","Prescott","Rutherford","Sinclair","Thorne","Winslow","Ackerman","Bridges","Middleton",
+  "Holiday","Tatum","Brown","Butler","Rozier","Herro","Adams","Turner","Sabonis","Fox","Murray","Gordon","Hield","Sexton","Garland","Mobley","Allen","Wagner",
+  "Banchero","Suggs","Anthony","Isaac","Hampton","Ellington","Waters","Nunn","Bradley","Caruso","Ball","Zubac","Powell","Batum","Morris","Plumlee","Hartenstein","Claxton",
+  "Dinwiddie","Finney","Smart","Pritchard","Nesmith","Hauser","Kornet","Queta","Springer","Walker","Grimes","Quickley","Barnes","Anunoby","Trent","Boucher","Achiuwa","McDaniels",
+  "Edwards","Conley","McGee","Bane","Clarke","Jackson","Rose","Aldama","Kennard","Roddy","Pippen","Bufkin","Nembhard","Mathurin","Sheppard","Toppin","Duarte","Sykes",
+  "Cissoko","Mahomes","Kelce","Hill","Jefferson","Higgins","Waddle","Metcalf","Lockett","Samuel","Aiyuk","Pittman","Godwin","Evans","Cooks","Meyers","Renfrow","Beckham",
+  "Landry","Hopkins","Golladay","Shepard","Slayton","Toney","Bateman","Flowers","Dell","Downs","Nabers","Odunze","Legette","McConkey","Worthy","Franklin","Pearsall","Wilson",
+  "Njoku","Andrews","Hockenson","Kmet","Goedert","Freiermuth","Schultz","Ferguson","LaPorta","Kincaid","Bowers","Barkley","Henry","Cook","Chubb","Mixon","Etienne","Swift",
+  "Pollard","Jacobs","Ekeler","Gibbs","Robinson","Hall","Williams","Achane","Charbonnet","Spears","Wright","Tracy","Corum","Trout","Betts","Freeman","Harper","Machado",
+  "Ramirez","Ohtani","Judge","Soto","Devers","Bregman","Correa","Semien","Seager","Bichette","Guerrero","Alvarez","Pena","Bogaerts","Realmuto","Nola","Wheeler","Burnes",
+  "Gallen","Webb","Bello","Rodon","Skenes","Strider","Greene","Rutschman","Henderson","Carroll","Merrill","Chourio","Langford","Holliday","Crow","Mayer","Jung","Kwan",
+  "Steer","Meadows","Volpe","Julien","Westburg","Cowser","Kjerstad","Wood","Abrams","Winn","Walls","Adell","Doyle","Tovar","Marte","Arraez","Contreras","Cronenworth",
+  "Kim","Suzuki","Yamamoto","Imanaga","Senga","McDavid","Draisaitl","Matthews","Marner","MacKinnon","Rantanen","Makar","Hughes","Kaprizov","Pastrnak","Marchand","Panarin","Kucherov",
+  "Point","Stamkos","Barkov","Tkachuk","Eichel","Pettersson","Horvat","Reinhart","Zibanejad","Trocheck","Hischier","Meier","Bratt","Nemec","Fantilli","Byfield","Cooley","Michkov",
+  "Celebrini","Bedard","Carlsson","Slafkovsky","Lafreniere","Caufield","Dobson","Barzal","Nelson","Pageau","Werenski","Seider","DeBrincat","Raymond","Nylander","Rielly","Knies","Domi",
+  "Doncic","Jokic","Antetokounmpo","Vucevic","Bogdanovic","Nurkic","Pokusevski","Sengun","Gobert","Wembanyama","Fournier","Ntilikina","Coulibaly","Sarr","Risacher","Salaun","Diabate","Traore",
+  "Konate","Cisse","Dembele","Fofana","Camara","Ndiaye","Sow","Sane","Toure","Keita","Diallo","Boateng","Mensah","Adebayo","Okafor","Achebe","Bamba","Nwosu",
+  "Eze","Obi","Osei","Asante","Owusu","Acheampong","Thiam","Quaye","Kouassi","Yeboah","Mendy","Bah","Jallow","Ceesay","Lindqvist","Petrov","Rasmussen","Salgado",
+  "Varga","Yamada","Zander","Belmonte","Granger","Huxley","Ibrahim","Jovanovic","Kowalski","Nowak","Kaminski","Bautista","Espinoza","Carrillo","Delgado","Herrera","Jimenez","Maldonado",
+  "Quintero","Solano","Vega","Zamora","Nakamura","Tanaka","Watanabe","Park","Choi","Nguyen","Tran","Pham","Singh","Patel","Kapoor","Brennan","Donnelly","Flanagan",
+  "Murphy","Sullivan","Walsh","Kowalczyk","Nowicki","Wojcik","Zielinski","Andersson","Bergstrom","Johansson","Nilsson","Larsen","Christensen","Falk","Haas","Keller","Richter","Schmidt",
+  "Brandt","Voss","Grimaldi","Reyes","Mercado","Fuentes","Navarro","Cortez","Rios","Aguilar","Cabrera","Ramos","Vasquez","Escobar","Duran","Molina","Serrano","Ipsen",
+  "Halvorsen","Kristiansen","Berg","Dahl","Lund","Moen","Nordin","Sandberg","Bianchi","Romano","Costa","Marino","Greco","Barbieri","Ferrari","Conti","Moretti","Rizzo",
+  "Abbott","Alston","Ashford","Atwater","Baldwin","Barron","Baxter","Beckett","Benton","Blackwell","Bowen","Bradshaw","Brantley","Brewer","Buckley","Burgess","Callahan","Cannon",
+  "Christie","Clemons","Clifton","Conway","Copeland","Cortland","Dalton","Danforth","Dawson","Dupree","Eastwood","Emerson","Ferrell","Fitch","Fletcher","Gable","Garrett","Gentry",
+  "Gilmore","Goddard","Grady","Hadley","Hollis","Huffman","Ingram","Ives","Jansen","Kingsley","Ledford","Lyle","Macklin","Maddux","Malone","Mayfield","McCabe","McCoy",
+  "Merritt","Northcutt","Oakley","Osborne","Padgett","Parrish","Patton","Pemberton","Pryor","Radcliffe","Rankin","Redmond","Renner","Rowley","Sanford","Sargent","Shelton","Sherwood",
+  "Stafford","Stallworth","Sterling","Stratton","Tillman","Tolliver","Trammell","Vickers","Wainwright","Waverly","Whitaker","Wilkerson","Woodard","Yates","Yeager","Ziegler","Acuna","Albies",
+  "Arozarena","Caminero","Candelario","Carrasco","Castellanos","Chapman","Diaz","Encarnacion","Estrada","Franco","Gimenez","Gonzalez","Grichuk","Grisham","Hernandez","Iglesias","Lugo","Marmol",
+  "Montero","Ozuna","Paredes","Peralta","Perdomo","Profar","Rengifo","Rojas","Sandoval","Sanchez","Tatis","Urias","Urshela","Valdez","Verdugo","Villar","Yepez","Aho",
+  "Ekblad","Forsberg","Girard","Guentzel","Hedman","Josi","Karlsson","Konecny","Kreider","Landeskog","Lindholm","Markstrom","Necas","Ovechkin","Palat","Provorov","Roslovic","Saros",
+  "Scheifele","Sergachev","Skjei","Svechnikov","Toews","Vasilevskiy","Vlasic","Vrana","Zacha","Zetterberg","Avdija","Deng","Hachimura","Kanter","Kurucs","Musa","Petrusev","Poirier",
+  "Saric","Simonovic","Theis","Valanciunas","Zeller","Diakite","Kabengele","Kalu","Loyd","Maledon","Ojeleye","Okongwu","Onuaku","Osabuohien","Sylla","Wanyama","Zeba","Adaramola",
+  "Balogun","Chiozza","Falaye","Igbinoghene","Nwaba","Ogundele","Ukwuachu"];
 function genName(){ let f=pick(FIRST),l=pick(LAST),t=0; while(f===l&&t<6){ l=pick(LAST); t++; } return f+" "+l; }
 /* Ensure a list of generated players has realistic, varied, NON-repeating names: every full name is
    unique (and unique vs the `taken` names already in the world), and no surname repeats within the
    batch — which is what makes a draft board read as 60 distinct people rather than cousins. Hall
    imports (fromHall) and the user keep their real names and are never renamed. */
-function uniqueNames(list, taken){
+function _lastOf(s){ const i=(s||'').indexOf(' '); return i<0?(s||''):s.slice(i+1); }
+function uniqueNames(list, taken, avoidLast){
   const used=new Set(taken||[]);
-  const BLOCK=new Set(["Kane"]);  // legacy guard (real-athlete surnames already removed from the pools)
+  const softLast=new Set(avoidLast||[]);           // surnames to AVOID when possible (e.g. current league)
+  const BLOCK=new Set(["Kane"]);
   const F=[...new Set(FIRST)], Ls=[...new Set(LAST)].filter(x=>!BLOCK.has(x));
-  const lastOf=s=>{ const i=(s||'').indexOf(' '); return i<0?(s||''):s.slice(i+1); };
-  const lastUsed=new Set();
-  for(const p of (list||[])){ if(p&&p.name&&(p.fromHall||p.isUser)){ used.add(p.name); lastUsed.add(lastOf(p.name)); } }
+  const lastUsed=new Set();                          // HARD: no surname repeats within this batch
+  for(const p of (list||[])){ if(p&&p.name&&(p.fromHall||p.isUser)){ used.add(p.name); lastUsed.add(_lastOf(p.name)); } }
   for(const p of (list||[])){
     if(!p||p.fromHall||p.isUser) continue;
-    let nm=p.name||'', t=0;
-    while(t<80){ const ln=lastOf(nm); if(nm.indexOf(' ')>0 && ln!==nm && !used.has(nm) && !lastUsed.has(ln) && !BLOCK.has(ln)) break; const f=pick(F), l=pick(Ls); t++; if(f===l) continue; nm=f+' '+l; }
-    /* hard guarantee: never emit a duplicate full name, even if the surname-variety pass gave up */
-    if(!nm||nm.indexOf(' ')<0||used.has(nm)){ for(let g=0;g<600;g++){ const f=pick(F), l=pick(Ls); if(f===l) continue; const cand=f+' '+l; if(!used.has(cand)){ nm=cand; break; } } while(used.has(nm)) nm=nm+' Jr'; }
-    p.name=nm; used.add(nm); lastUsed.add(lastOf(nm));
+    let nm='', fallback='', t=0;
+    while(t<200){ const f=pick(F), l=pick(Ls); t++; if(f===l) continue; const cand=f+' '+l;
+      if(used.has(cand) || lastUsed.has(l) || BLOCK.has(l)) continue;   // fresh full name + fresh surname within batch
+      if(!fallback) fallback=cand;                   // first candidate meeting the HARD constraints
+      if(!softLast.has(l)){ nm=cand; break; }         // also dodges league surnames -> take it
+    }
+    if(!nm) nm=fallback;                              // couldn't dodge league surnames -> accept a batch-unique one
+    /* hard guarantee: never emit a duplicate full name even if the variety passes gave up */
+    if(!nm||nm.indexOf(' ')<0||used.has(nm)){ for(let g=0;g<1500;g++){ const f=pick(F), l=pick(Ls); if(f===l) continue; const cand=f+' '+l; if(!used.has(cand)){ nm=cand; break; } } while(used.has(nm)) nm=nm+' Jr'; }
+    p.name=nm; used.add(nm); lastUsed.add(_lastOf(nm));
   }
 }
 
@@ -390,8 +476,23 @@ function genProspect(opts){
   p.devRate = clamp(rf(0.7,1.3) + (tier>=4?0.2:0) + (opts.isUser?0.12:0) + (opts.firstRun?0.2:0), opts.isUser?0.72:0.55, 1.7);
   p.peakAge = ri(26,29) - (tier>=4?ri(0,2):0);
   p.tier0 = tier;              // hidden draft-day tier
-  // scale current attrs so starting ovr is modest for an 18yo
-  const startOvr = clamp(Math.round(38 + tier*5 + randn()*3 + (opts.startBoost||0)), 30, 72);
+  // ===== GM draft archetype + readiness (front-office system; gated so Player path stays byte-identical) =====
+  let startOvr;
+  if(opts.gm || opts.archetype){
+    let _arch=opts.archetype||null, _rdy;
+    if(_arch && ARCHETYPES[_arch]){ const A=ARCHETYPES[_arch];
+      if(opts.age==null && A.age){ p.age=ri(A.age[0],A.age[1]); }
+      _rdy=clamp(Math.round((A.rdy[0]+rand()*(A.rdy[1]-A.rdy[0]))*100+randn()*5),5,98);
+      p.devRate=clamp(p.devRate*(A.dev||1),0.4,2.0); if(A.stash)p.stash=true; p.archetype=_arch;
+    } else { _rdy=clamp(Math.round(40+(p.age-18)*8+(pot-70)*0.4+randn()*8),5,96); }
+    p.readiness=_rdy;
+    // readiness sets how close to his ceiling he starts; projects start far below it
+    if(_arch){ const r=_rdy/100; startOvr=clamp(Math.round(pot-(4+(1-r)*22)+randn()*2),30,Math.min(80,pot)); }
+    else startOvr=clamp(Math.round(38 + tier*5 + randn()*3 + (opts.startBoost||0)), 30, 72);
+  } else {
+    // scale current attrs so starting ovr is modest for an 18yo
+    startOvr = clamp(Math.round(38 + tier*5 + randn()*3 + (opts.startBoost||0)), 30, 72);
+  }
   scaleToOvr(p, startOvr);
   computeStyles(p);
   p.ovr = ovrOf(p);
@@ -547,6 +648,11 @@ function genLeague(){
     }
     rankRoster(L,t);
   }
+  // NAME VARIETY: dedupe the whole league so no full name repeats and surnames stay varied (no more 11 "Walsh"es)
+  L.usedNames=L.usedNames||{}; L.usedLast=L.usedLast||{};
+  const _allP=[]; for(const t of L.teams){ for(const id of t.roster){ if(L.players[id]) _allP.push(L.players[id]); } }
+  uniqueNames(_allP, []);
+  for(const p of _allP){ L.usedNames[p.name]=1; L.usedLast[_lastOf(p.name)]=1; }
   return L;
 }
 function addPlayer(L,p){ L.players[p.id]=p; }
@@ -743,16 +849,41 @@ function applyForm(pg,f){
   pg.fgm*=(0.6+0.4*f); pg.tpm*=f; pg.ftm*=(0.55+0.45*f);
   return pg;
 }
+/* ===== INJURY OVERHAUL (friend playtest #11): severity tiers + skill & choice mitigation.
+   Roll 1 decides IF you get hurt — durability, stamina, motor, age, injury history and
+   your season approach all move it, so a smart, tough player VISIBLY dodges injuries.
+   Roll 2 decides HOW BAD — four tiers from a knock (days) to a rare tier-4 tear that
+   opens a comeback arc instead of ending the run. Repeated injuries stack: each past
+   one nudges future risk AND severity up, so careers can fade organically. */
+function rollInjury(L,p,opts){
+  opts=opts||{};
+  const injMult=(typeof INJURY_MULT!=='undefined'?INJURY_MULT:1);   // realism slider: off / normal / brutal
+  const apprInj=(opts.approach==='push'?1.35:opts.approach==='manage'?0.6:1);  // load-management strategy
+  const hist=(p.injuryHistory&&p.injuryHistory.length)||0;
+  const ageR=p.age>=34?0.035:p.age>=30?0.018:0;
+  const risk=clamp((0.17-(p.attr.DUR-60)*0.0022-(p.attr.STA-60)*0.0008-((p.attr.MTR||60)-60)*0.0003+ageR+hist*0.008+(p._overdrive?(0.02+(p.age>=30?0.02:0)+(p.age>=34?0.02:0)):0))*injMult*apprInj,0,0.55);   /* Empire: Overdrive runs the body hot */
+  const out={risk:risk,event:null};
+  if(injMult<=0||!chance(risk))return out;   // even a 99-DUR iron man keeps a small floor risk — nobody is immune
+  let sv=rand()+(p.age>=32?0.10:0)+hist*0.04-((p.attr.DUR||70)-70)*0.004-((p.attr.CMP||65)-65)*0.001+(opts.approach==='push'?0.07:opts.approach==='manage'?-0.08:0);
+  sv=clamp(sv,0,1.25);
+  let tier,miss,label;
+  if(sv<0.55){tier=1;miss=ri(2,6);label=pick(['a rolled ankle','a bone bruise','a tweaked hamstring','back spasms','a jammed finger']);}
+  else if(sv<0.85){tier=2;miss=ri(7,18);label=pick(['a sprained ankle','a strained calf','a shoulder issue','a sprained wrist','plantar fasciitis']);}
+  else if(sv<1.08){tier=3;miss=ri(19,45);label=pick(['a knee injury','a fractured hand','a stress fracture in the foot','a torn ligament in the thumb']);}
+  else {tier=4;miss=ri(50,70);label=pick(['a torn Achilles','a torn ACL','a ruptured quad tendon']);}
+  p.injuryHistory.push(L.year);
+  if(p._injGuard&&tier>=2){ tier--; miss=Math.max(2,Math.round(miss*0.5)); p._injGuard=false; out._labSaved=true; }  /* Empire: Recovery Lab catches it early (once per season) */
+  out.event={miss:miss,type:label,tier:tier,_labSaved:!!out._labSaved};
+  return out;
+}
 function simPlayerSeason(L,p, opts){
   opts=opts||{};
   const gpMax=opts.gp!=null?opts.gp:82;
-  // injuries reduce GP
+  // injuries reduce GP — tiered roll (see rollInjury above)
   let gp=gpMax;
-  const injMult=(typeof INJURY_MULT!=='undefined'?INJURY_MULT:1);   // realism slider: off / normal / brutal
-  const apprInj=(opts.approach==='push'?1.35:opts.approach==='manage'?0.6:1);  // load-management strategy
-  const durRisk=clamp((0.18-(p.attr.DUR-60)*0.0022 - (p.attr.STA-60)*0.0008)*injMult*apprInj,0,0.5);
-  let injuryEvent=null;
-  if(injMult>0 && chance(durRisk)){ const miss=ri(4,38); gp=clamp(gp-miss,8,gpMax); injuryEvent={miss,type:pick(['a sprained ankle','a knee injury','a hamstring strain','a sore back','a fractured hand','a shoulder issue','plantar fasciitis','a strained calf','a sprained wrist','a bruised hip'])}; p.injuryHistory.push(L.year); }
+  const _ir=rollInjury(L,p,{approach:opts.approach});
+  const injuryEvent=_ir.event;
+  if(injuryEvent){ gp=clamp(gp-injuryEvent.miss,6,gpMax); }
   const meanAdj=(opts.approach==='push'?0.05:opts.approach==='manage'?-0.03:0) + (opts.bounce?0.045:0) + (opts.focusAdj||0);
   const form=opts.form!=null?opts.form:seasonFormMult(p,{meanAdj});
   const pg=applyForm(perGame(L,p),form);
@@ -776,6 +907,7 @@ function simPlayerSeason(L,p, opts){
   c.tov+=pg.tov*gp; c.fgm+=pg.fgm*gp; c.fga+=pg.fga*gp; c.tpm+=pg.tpm*gp; c.tpa+=pg.tpa*gp; c.ftm+=pg.ftm*gp; c.fta+=pg.fta*gp;
   c.bestPpg=Math.max(c.bestPpg,seas.ppg); c.bestRpg=Math.max(c.bestRpg,seas.rpg); c.bestApg=Math.max(c.bestApg,seas.apg);
   seas.injury=injuryEvent;
+  seas.healthPct=Math.round((1-_ir.risk)*100);   // odds reveal: "you had an X% chance of a clean year"
   return seas;
 }
 
@@ -912,6 +1044,199 @@ function ageDelta(age,peak){
   if(d<=11) return rf(-8.0,-4.4);    // steep
   return rf(-10.5,-6.2);             // twilight
 }
+/* FATHER-TIME CLOCK (PJ spec 2026-07-14): stats never decrease until a player's own decline age.
+   Rolled once per career: most start slipping 31-35, a lucky ~14% stay ageless into 36-38, and 29 is the
+   HARD FLOOR (and hella rare — needs a huge frame). Height matters past a 6'10" threshold: bigger bodies
+   break down earlier. Durability nudges the clock later. Same rule for every player in the world — parity. */
+function declineAgeOf(p){
+  if(p._declAge) return p._declAge;
+  const h=p.adultHeight||p.heightIn||78;
+  /* THE SET POINT (reshaped 2026-07-14 R3, PJ spec). A base that varies by FRAME and POSITION —
+     guards last longest, bigs break down earliest, and mass on the joints pulls it earlier still —
+     then +/- up to 2 years driven by the BODY and the BUILD (durability, conditioning, motor, and
+     how much of your game lives on your legs). Bad enough stats on a big enough frame can bottom out
+     at 27, but it takes a giant, a fragile body AND bad luck, so it stays rare. The ageless roll is
+     preserved untouched: it is what keeps the 40-year-old a live outcome (a law from last round). */
+  const posBase={PG:33.2,SG:32.7,SF:32.2,PF:31.5,C:31.0}[p.pos] || 32.1;  // position is now a real signal, not just height
+  const tallPen=Math.min(3.0,Math.max(0,h-82)*0.40);      // 6'10"+ frames age earlier (a 6'8 PG and a 6'8 C now differ via posBase too)
+  const A=p.attr||{};
+  const dur=(A.DUR||70), sta=(A.STA||70), mtr=(A.MTR||65);
+  let bodyAdj=(dur-70)*0.030 + (sta-70)*0.015 + (mtr-65)*0.012;   // a well-kept body buys years
+  bodyAdj -= (athIndexOf(p)-1.0)*1.7;                     // a game built above the rim leaves with the legs -> earlier clock
+  bodyAdj=clamp(bodyAdj,-2.0,2.0);                        // PJ: +/- up to 2 years from stats
+  let a=posBase - tallPen + bodyAdj + rf(-0.8,0.8);       // typical: 31-34
+  if(rand()<0.13) a+=rf(1.5,3.5);                         // the ageless — regress hella late (KEEP: this is the 40-year-old's doorway)
+  a=clamp(Math.round(a),27,38);                           // 27 floor now (down from 29): a rare, punished outlier, never the norm
+  /* DON'T SEAL THE CLOCK ON A CHILD (bug found by the panel, 2026-07-14). developOneYear calls this
+     every single year from age 7, and the old version cached on the FIRST call — so a 12-year-old's
+     durability decided the whole career, the DUR term did nothing for MyPlayer, and no amount of
+     training could ever move your decline age. The clock is only sealed once you're a grown man;
+     before that it's a live projection off the body you currently have, which is what makes youth
+     and college durability work a real investment instead of a decoration. */
+  if((p.age||0)>=CLOCK_SEAL_AGE){ p._declAge=a; return p._declAge; }
+  return a;    // provisional — only ever used for the `age < clock` guard, which is trivially true for kids
+}
+const CLOCK_SEAL_AGE=21;
+/* What a good team doctor could tell you BEFORE the clock is sealed — and, crucially, DETERMINISTIC:
+   no dice, so it moves only when your body moves. That's what makes it a plan instead of a horoscope. */
+function declineProject(p){
+  const h=p.adultHeight||p.heightIn||78;
+  const posBase={PG:33.2,SG:32.7,SF:32.2,PF:31.5,C:31.0}[p.pos] || 32.1;
+  const tallPen=Math.min(3.0,Math.max(0,h-82)*0.40);
+  const A=p.attr||{}, dur=(A.DUR||70), sta=(A.STA||70), mtr=(A.MTR||65);
+  let bodyAdj=(dur-70)*0.030+(sta-70)*0.015+(mtr-65)*0.012-(athIndexOf(p)-1.0)*1.7;
+  bodyAdj=clamp(bodyAdj,-2.0,2.0);
+  const mid=posBase-tallPen+bodyAdj;                       // rf(-0.8,0.8) has mean 0
+  return {lo:clamp(Math.round(mid-0.8),27,38), hi:clamp(Math.round(mid+0.8),27,38), mid:clamp(Math.round(mid),27,38)};
+}
+/* the same for fade SPEED: declMultOf's math with the dice taken out — what your body and build are
+   ASKING for, before luck gets a vote. Locked only when the fade actually starts, so every pro season
+   you spend on durability, conditioning, motor, or on rebuilding your game around skill still moves it. */
+function fadeProject(p){
+  const A=p.attr||{};
+  let m=1.05;
+  m-=(clamp(A.DUR||70,25,99)-70)*0.0034;
+  m-=(clamp(A.STA||70,25,99)-70)*0.0018;
+  m-=(clamp(A.MTR||65,25,99)-65)*0.0011;
+  const h=p.adultHeight||p.heightIn||78;
+  m+=clamp((h-78)*0.0075,-0.05,0.10);
+  m+=(athIndexOf(p)-1.0)*0.62;
+  return clamp(Math.round(m*100)/100,0.45,1.60);
+}
+/* ===== FADE SPEED (PJ spec 2026-07-14) =====
+   declineAgeOf says WHEN Father Time knocks. This says HOW FAST he takes it.
+   Some careers fall off a cliff in three years; others glide for eight-plus. That spread is NOT
+   noise — it reads the actual body and the actual build:
+     · durability / stamina / motor — the engine and the upkeep
+     · injury history — a body that has broken down before breaks down again (applied LIVE each year,
+       so the Achilles you tear at 34 visibly ages you from there)
+     · height & frame — more mass on the same joints
+     · PLAYSTYLE — a game played above the rim leaves with the legs; skill and IQ age like wine
+   Locked once, the season the clock strikes: the player you ARE when he arrives is the player who
+   has to survive him. Lower = fades slower. MyPlayer and every NPC roll the same way (parity). */
+const ATH_OVR_KEYS=["SPD","ACC","VRT","STA","DNK"];      // the legs — what leaves first (mirrors DECL_FAST)
+/* What share of THIS player's OVR is actually built on his legs, measured against what a
+   positionally-average build would give. >1 = an athlete. <1 = a craftsman. Position-neutral. */
+function athIndexOf(p){
+  const w=POS_W[p.pos]||POS_W.SF;
+  let athV=0,allV=0,athW=0,allW=0;
+  for(const k in w){ const wt=w[k], v=(p.attr[k]||0)*wt;
+    allV+=v; allW+=wt;
+    if(ATH_OVR_KEYS.indexOf(k)>=0){ athV+=v; athW+=wt; } }
+  if(!allV||!athW) return 1;
+  return clamp((athV/allV)/(athW/allW), 0.60, 1.45);
+}
+function declMultOf(p){
+  if(p._declMult!=null) return p._declMult;
+  const A=p.attr||{};
+  let m=1.05;                                            // the slope before anything about YOU
+  /* The body. Deliberately modest coefficients: durability is *a* factor, not *the* factor — an
+     engaged player maxes DUR/STA/MTR anyway, and if these dominated, every trained career would
+     collapse onto the same slow slope and the whole point (variance) would be lost. */
+  m -= (clamp(A.DUR||70,25,99)-70)*0.0034;               // 99 DUR ≈ −0.10 · 45 DUR ≈ +0.09
+  m -= (clamp(A.STA||70,25,99)-70)*0.0018;               // conditioning buys years
+  m -= (clamp(A.MTR||65,25,99)-65)*0.0011;               // the ones who never stop working keep it longest
+  const h=p.adultHeight||p.heightIn||78;
+  m += clamp((h-78)*0.0075,-0.05,0.10);                  // frame (declineAgeOf already took the big-man tax up front)
+  m += (athIndexOf(p)-1.0)*0.62;                         // THE BUILD — the loudest single lever (±0.28)
+  m *= rf(0.74,1.34);                                    // the dice: two identical bodies still age differently
+  /* Lean generous (PJ), and WIDE (PJ). Two separate jobs, and they pull in opposite directions:
+       · the SPREAD has to be real — a cliff in three years and a glide over eight-plus both have to
+         be live outcomes, or "fade speed varies career to career" is just flavour text;
+       · but the skew has to be kind — a glide should be common, a cliff a genuine risk rather than
+         the default, because this is a game and the player deserves the benefit of the doubt.
+     So: compress the punishing tail HARD (×0.78) and stretch the kind one HARDER (×1.34). The result
+     is a distribution whose bottom end reaches further than its top end does — the durable, skill-
+     built, late-clock career glides far enough to still be playing at 40, which is the outlier PJ
+     explicitly wants to exist, while the median career still ends on schedule. */
+  if(m>1.0) m=1.0+(m-1.0)*0.78;                          // compress the punishing tail
+  else      m=1.0-(1.0-m)*1.34;                          // stretch the kind one — this is what buys the 40-year-old
+  p._athIdx=Math.round(athIndexOf(p)*100)/100;
+  p._declMult=clamp(Math.round(m*100)/100, 0.42, 1.55);
+  return p._declMult;
+}
+/* ===== THE ROSTER FLOOR (PJ spec 2026-07-14) =====
+   The league decides when you're done, not your ego. Past 35 there is a minimum OVR a team will
+   carry, and it climbs every single year. Nobody signs a 70-OVR 40-year-old for the name on the
+   back. Playing at 40 has to mean being genuinely GOOD at 40 — that's why it's an outlier.
+   Same curve for MyPlayer and NPCs. Fall below it and you get ONE grace year — the last roster
+   spot — and then the calls stop. */
+/* Tuned against 80 traced careers (see "Aging Overhaul — Balance Report"). The shape matters as much
+   as the numbers: FORGIVING at 35-36 (a good vet keeps his job on merit) and then the door closes
+   fast. That's what produces a median last season of 37 while still leaving a real, ~5% doorway to 40
+   — and it means the 40-year-olds are the guys who actually deserve to be there, not everyone. */
+/* THE CURVE, round 2. The 36-rung is the load-bearing one: it is where the median career is decided,
+   because a player who clears 36 with his grace year intact will always get a 37th season out of the
+   37-rung. Raising it 78→82 is what moves the median last season to 36 (retirement screen: 37).
+   It reads harsh, but it costs the NPC league NOTHING: the measured 36-year-old NPC band is 69-76, so
+   every one of them was already under the old 78 and already on his grace year. The only player who
+   actually lives in the 78-82 window is a trained MyPlayer — which is precisely the guy the floor was
+   built to retire. Verified against league_scan after the change: the old NPCs are untouched. */
+/* The 33/34 rungs (added in the round-2 panel pass) are deliberately FAR below anything a healthy
+   career touches — median OVR at 33-34 is ~87-90, so they catch nobody who is merely aging. They
+   exist for one player: the cliff career (early clock × a 1.2+ fade), who collapses 84 → 50 between
+   30 and 34. Before this he fell through the floor entirely — it started at 35 — and simply vanished
+   on the `ovr<56` backstop with no warning, no bar to beat, and no last-roster-spot beat. Now he
+   gets the same visible staircase and the same one grace year as everybody else, which is the whole
+   point of the system. It also closes a parity hole: NPCs have always been waived below 69 at any
+   age, and MyPlayer had no equivalent at all.
+   The 39-rung is the TAIL knob and it is violently sensitive — 93→92 alone took the 40+ tail from
+   1.7% to 5.0%. Do not touch it without re-running aging_test across 3 cohorts. */
+/* ⚠️ 39-rung RE-NUDGED (2026-07-14 R3). Item 4 raised peaks (focused builds now reach 96-100 vs the
+   old 92), which fattened the 40+ tail back toward the ceiling (measured 5.0% at the old 93-rung).
+   93->94 trims it to ~3-4% (the rung is violently sensitive: 93->92 once moved it 1.7%->5.0%, so a
+   single point the other way is the right dose). 40/41 raised in step so the door keeps closing. */
+const ROSTER_FLOOR={33:58,34:63,35:68,36:82,37:88,38:93,39:95,40:97,41:99,42:99,43:99};
+function rosterFloor(age){ if(age<33) return 0; if(age>43) return 99; return ROSTER_FLOOR[age]||0; }
+/* ===== THE LEAGUE-RELATIVE SAFETY NET (PJ R3: "make the floor relative to the league's OVR
+   distribution ... so it stops being fragile to peak inflation forever"). The absolute curve above
+   is TUNED against today's peaks; the danger is that if peaks ever inflate again, an absolute 94
+   stops being an elite bar and the twilight goes soft. This net anchors the top rungs to the
+   league's actual elite band (p88..p97 of rostered, non-user OVR), so the bar rises automatically
+   with the league. It is applied via max() with the absolute floor, so at today's scaling — where
+   the absolute 94 is already STRICTER than league p97 (~88) — it changes nothing and cannot regress
+   the tuned behavior; it only ever bites if the whole league drifts up. Refreshed each offseason. */
+let _FLOOR_REF=null;
+function setFloorRef(L){ try{
+  const ov=[]; for(const id in L.players){ const p=L.players[id]; if(p&&!p.retired&&p.team!=null&&!p.isUser)ov.push(p.ovr); }
+  if(ov.length<40){ _FLOOR_REF=null; return; }
+  ov.sort((a,b)=>a-b); const q=f=>ov[Math.min(ov.length-1,Math.floor(f*ov.length))];
+  _FLOOR_REF={p80:q(0.80),p88:q(0.88),p94:q(0.94),p97:q(0.97)};
+}catch(e){ _FLOOR_REF=null; } }
+function relFloor(age){ const R=_FLOOR_REF; if(!R||age<36) return 0;
+  return ({36:R.p80,37:R.p88,38:R.p94,39:R.p97,40:R.p97+2,41:R.p97+3,42:R.p97+4,43:R.p97+5}[age]) || (age>43?R.p97+6:0); }
+/* THE ROPE — a résumé buys you a little patience, and only a real one does.
+   Deliberately TOP-HEAVY: there's a threshold before it pays anything at all, and it caps at 4.
+   That shape is load-bearing. A generous rope (the first cut gave every decent star 8+ OVR of slack)
+   drags the median career out to 39-40 and makes the twilight mushy for everybody. A threshold rope
+   changes nothing for a good starter, hands a genuine all-timer ~4 extra OVR of patience, and lets
+   the LONGEVITY question be settled where PJ wanted it settled — by the body and the build, not the
+   trophy case. Longevity is earned in the weight room; the rope is just the league being sentimental. */
+function floorCredit(p){ const a=p.awards||{};
+  const score=(a.mvp||0)*1.2+(a.fmvp||0)*0.7+(a.allLeague1||0)*0.6+(a.champ||0)*0.4+(a.dpoy||0)*0.4+(a.allStar||0)*0.20;
+  return Math.max(0, Math.min(4, Math.round((score-12)*10)/10)); }
+function rosterFloorFor(p){ const age=p.age||0;
+  /* the bar is the STRICTER of the tuned absolute curve and the league-relative net (see setFloorRef).
+     Rope (résumé credit) is applied once, to the final bar. */
+  const abs=rosterFloor(age), rel=relFloor(age);
+  const f=Math.max(abs,rel);
+  return f>0 ? Math.max(0, Math.round((f-floorCredit(p))*10)/10) : 0; }
+/* THE SAME DOOR for everyone (PJ: parity). MyPlayer and every NPC in the world are measured against
+   the same floor, get the same ONE grace year — the last roster spot — and leave the same way.
+   Returns true the year the calls stop. */
+function floorForcesOut(p){
+  const f=rosterFloorFor(p);
+  if(f>0 && p.ovr<f){
+    /* THE CLIFF EXIT. If you didn't drift under the bar but fell off it — more than 9 OVR below what
+       the league pays for — nobody offers you the minimum either. There's no goodbye tour for a guy
+       whose body gave out; the phone just never rings. Without this, EVERY career ended the exact
+       same way (drift → last roster spot → forced), which is the "the ending is samey" note. */
+    if(p.ovr < f-12){ p._hardExit=true; return true; }   /* gap widened 9→12 alongside the 36-rung raise: the cliff exit has to stay a CLIFF (a body that gave out), not just "everyone who is a bit under a now-higher bar" — at 9 it was swallowing a quarter of all careers into an age-35 exit */
+    if(!p._graceUsed){ p._graceUsed=true; return false; }   // one last minimum deal
+    return true;                                            // out of rope
+  }
+  return false;
+}
 /* the attributes a player is actively preserving this season (a group name or a single attr) decline far slower */
 function preserveKeys(p){ if(!p||!p.preserve) return []; if(ATTR_GROUPS[p.preserve]) return ATTR_GROUPS[p.preserve]; if(ATTRS.indexOf(p.preserve)>=0) return [p.preserve]; return []; }
 function developOneYear(p, opts){
@@ -919,6 +1244,9 @@ function developOneYear(p, opts){
   const age=opts.ageOverride!=null?opts.ageOverride:p.age;
   const room=p.potential-p.ovr;
   let growth=ageDelta(age,p.peakAge);
+  const _dA=declineAgeOf(p);
+  if(age<_dA) growth=Math.max(growth,0);                         // plateau, never decline, until YOUR clock strikes
+  else growth=Math.min(growth,-0.5)* (1);                        // once it strikes, you are declining (re-shaped below)
   // young players only grow toward potential
   p._downYear=false;
   if(age<=26){
@@ -940,7 +1268,7 @@ function developOneYear(p, opts){
     // approached his potential; now the texture bumps tilt the profile and scaleToOvr realizes the gain.
     const _gainCap = opts.userNatural ? 99 : (age<=26 && !p._breakout ? 2.2 : 99);  // NPC steady years capped; breakout years uncapped
     const _ovr0=p.ovr, _gain=Math.min(growth, Math.max(0,p.potential-p.ovr), _gainCap);
-    const tex=(keys,m)=>{ for(const k of keys){ p.attr[k]=clamp(p.attr[k]+_gain*m*attrFrameMult(p,k)+randn()*0.25,25,attrCap(p,k)); } };
+    const tex=(keys,m)=>{ for(const k of keys){ let _d=_gain*m*attrFrameMult(p,k)+randn()*0.25; if(opts.userNatural)_d=Math.max(0,_d); /* MyPlayer stats NEVER wiggle down pre-decline */ p.attr[k]=clamp(p.attr[k]+_d,25,attrCap(p,k)); } };
     if(focus && ATTR_GROUPS[focus]) tex(ATTR_GROUPS[focus],0.22);   // focus group tilts up fastest
     tex(SKILL_ATTRS,0.12); tex(ATH_ATTRS,0.06);                     // skills grow faster than raw athleticism
     // BT11: timing of growth shapes the player — late bloomers keep guard skills/athleticism, early growers add bigs' tools
@@ -951,36 +1279,78 @@ function developOneYear(p, opts){
     p.attr.SIQ=clamp(p.attr.SIQ+rf(0,0.8),25,99);
     p.attr.CMP=clamp(p.attr.CMP+rf(0,0.7),25,99);
     p.attr.LDR=clamp(p.attr.LDR+rf(0,0.6),25,99);
-    scaleToOvr(p, clamp(Math.round(Math.min(p.potential,_ovr0+_gain)),25,99));
+    {let _tgt=clamp(Math.round(Math.min(p.potential,_ovr0+_gain)),25,99);
+     /* CLAW-BACK FIX (2026-07-14, PJ: "I upgrade PAS to 92, it goes back to 88, every year"): for MyPlayer the
+        normalizer could only see `potential` as the ceiling, so every point trained ABOVE potential (breakthroughs
+        the player literally paid for) was stripped back each season — 20-40 attr points/yr for a maxed 26-year-old.
+        The engine never scales the USER down in the growth branch; only the aging/decline branch takes stats away. */
+     if(opts.userNatural)_tgt=Math.max(_tgt,Math.round(ovrOf(p)));
+     scaleToOvr(p,_tgt);}
   } else {
-    // ---- graceful decline: legs go first, skills fade slowest, the brain keeps growing ----
-    // Pace is VARIABLE and shaped by durability, conditioning, height/frame, and a per-career roll,
-    // so no two players age the same. A "Preserve" pick resists decline on your signature.
-    const peak=p.peakAge||27;
-    // AGING-REALISM pass: the mid-30s cliff is real. Past ~33 the decline accelerates harder, and even durable
-    // vets can't fully escape it (the old curve let conditioned bigs barely lose 1 OVR from 30→35 — unrealistic).
-    const lateAccel = age>=34 ? 1.18 : age>=32 ? 1.08 : 1.0;
-    const accel=clamp((0.80+(age-peak)*0.052)*lateAccel,0.80,1.70);            // steepens gradually past prime, then bites in the mid-30s
-    const tough=clamp(1-(p.attr.DUR-70)*0.006-(p.attr.STA-70)*0.0025,0.62,1.28);// durable vets fade slower, but the floor is higher (can't dodge Father Time)
-    const htM=clamp(1-(((p.adultHeight||p.heightIn||78))-78)*0.012,0.82,1.16); // taller, sturdier frames fade a touch slower
-    if(p._declMult==null) p._declMult=rf(0.72,1.30);                          // every career ages differently
-    let g=growth*accel*tough*htM*p._declMult;                                // g is negative
-    // age-related decline cliff: rare sudden fall-off, more likely the further past peak and for fragile legs
+    /* ================= THE FADE =================
+       Two jobs, and the old code conflated them:
+         1. HOW MUCH you lose this year — a real OVR number, driven by your own clock (_dA) and your
+            own fade speed (declMultOf). This is the part the player actually feels.
+         2. WHAT you lose — the shape. Legs first, strength and activity next, skill and feel last;
+            the brain keeps growing. A "Preserve" pick defends your signature.
+       Job (2) used to be doing job (1)'s work, badly: decline was divided across a whole attribute
+       GROUP (amt/keys.length) while growth applied per-attr, so a full year of "decline" moved OVR
+       by ~0.2 and a flat scaleToOvr(−0.4..−1.2) quietly did all the real work. Fade SPEED was
+       therefore decorative — every career decayed at the same rate no matter the body or build.
+       Now the OVR loss is computed FIRST and the shaping is applied around it, so declMultOf is
+       genuinely the thing that decides whether you glide for eight years or fall off a cliff. */
+    const _yd=Math.max(0,age-_dA);                                          // years since YOUR clock struck
+    // the ramp: a gentle first slip, then the real thing, then the twilight
+    /* THE RAMP (re-tuned 2026-07-14, round 2). The first slip stays deliberately gentle — that's the
+       "Father Time arrives" beat, and it should read as a warning, not an execution. But the middle
+       bands were too kind: a peak-92 player was still 85 OVR at 36, which is an All-Star, and no
+       league-sane roster floor can ever retire an All-Star. That single fact was what pushed the
+       median career to a last season of 38. Years 3-8 past your clock now bite ~15% harder, which is
+       what a career actually looks like once the legs are gone — and it lets the FLOOR stay humane
+       (you leave because you're no longer good enough, not because the league got cruel). */
+    const base = _yd<=0 ? rf(1.2,2.5) : _yd<=2 ? rf(4.2,6.4) : _yd<=5 ? rf(6.6,9.2) : _yd<=8 ? rf(8.0,11.0) : rf(10.0,13.0);
+    /* HOW FAST. declMultOf reads the body and the build ONCE (durability, stamina, motor, frame, and
+       how much of your game lives above the rim) and locks your personal slope. Everything it needs
+       used to live here as `tough`/`htM`; it all moved in there, so nothing is counted twice. */
+    const dm=declMultOf(p);
+    /* and what has happened to you SINCE — live, not locked: a body that keeps breaking down keeps
+       breaking down, so the Achilles you tear at 34 ages you from that day forward. */
+    const _hist=(p.injuryHistory&&p.injuryHistory.length)||0;
+    const injM=1+Math.min(0.34,_hist*0.030);
+    /* HOW YOU PLAY THE YEAR. The season approach used to only move form and injury odds; in the
+       twilight that made it a dead choice, and the fade was something you could only watch. Now
+       "manage your load" genuinely buys you time and "push" genuinely spends it — so every year past
+       your clock there's a real decision on the table, and the player who wants to chase 40 has a
+       lever to pull. (Same rule for NPCs — they just don't get to choose.) */
+    const apprF=(opts.approach==='manage'?0.82:opts.approach==='push'?1.16:1);
+    let loss=base*dm*injM*apprF;                                            // POSITIVE = OVR points surrendered this year
+    // the cliff: a rare, sudden fall-off — likelier the deeper you are, and for legs that were always brittle
     p._cliff=false;
-    if(age>=peak+3){ const cf=clamp(0.015+(age-peak-3)*0.008+(p.attr.DUR<66?0.03:0),0.015,0.09); if(chance(cf)) p._cliff=true; }
+    if(_yd>=2){ const cf=clamp(0.015+(_yd-2)*0.008+(p.attr.DUR<66?0.03:0),0.015,0.09); if(chance(cf)) p._cliff=true; }
+    if(p._cliff) loss+=rf(3.0,5.5);                                         // a real, visible hit — this is the season people remember
+    /* THE MERCY CAP (PJ: "lean generous — give players the benefit of the doubt, not overdone").
+       The ramp × a 1.3 fade × an injury history × a cliff roll can compound into a single season that
+       erases twenty points and turns a star into a bench player between two screens. A cliff should be
+       a brutal year, not a disintegration — so no one season may take more than 11 overall. The steep
+       careers still end fast (they just take three ugly years to do it instead of one absurd one). */
+    loss=Math.min(loss,11);
+    const _ovr0=ovrOf(p);
+    // ---- the SHAPE: what leaves, and in what order (scaleToOvr sets the true level afterwards) ----
     const presK=preserveKeys(p);                                            // signature stats resist decline (0.3x)
-    const dApply=(keys,amt)=>{const per=amt/keys.length;for(const k of keys){ const pf=presK.indexOf(k)>=0?0.3:1; p.attr[k]=clamp(p.attr[k]+per*pf+randn()*0.3,30,99);} };
-    const slowMult = age>=36 ? 0.92 : age>=34 ? 0.74 : age>=33 ? 0.55 : 0.37;   // AGING-REALISM: slow-fading skills finally go in the mid-30s so OVR actually drops
-    dApply(DECL_FAST, g*1.12);
-    dApply(DECL_MED,  g*0.84);
-    dApply(DECL_SLOW, g*slowMult);
-    if(age>=35 && !p._cliff) scaleToOvr(p, clamp(Math.round(ovrOf(p)-rf(0.4,1.2)),30,99));  // a small steady extra fade so a 35+ star visibly declines
-    if(p._cliff) scaleToOvr(p, clamp(Math.round(ovrOf(p)-rf(3.5,6.5)),30,99));  // sudden fall-off: a real, visible OVR hit
-    // the wise vet: feel, leadership and clutch keep climbing into the 30s, softening the fade (trimmed so they don't fully mask it)
+    const slowMult = _yd>=6 ? 0.92 : _yd>=4 ? 0.74 : _yd>=3 ? 0.55 : 0.37;  // skills hold out for years, then finally go too
+    const dApply=(keys,mult)=>{ const per=-loss*1.30*mult;                  // PER ATTR now, not per group
+      for(const k of keys){ const pf=presK.indexOf(k)>=0?0.3:1; p.attr[k]=clamp(p.attr[k]+per*pf+randn()*0.3,30,99); } };
+    dApply(DECL_FAST, 1.12);                                                // explosiveness and legs go first
+    dApply(DECL_MED,  0.84);                                                // finishing, strength, activity erode next
+    dApply(DECL_SLOW, slowMult);                                            // skills and feel fade slowest
+    // the wise vet: feel, leadership and clutch keep climbing into the 30s (they soften the fade, never mask it)
     p.attr.LDR=clamp(p.attr.LDR+rf(0,0.30),25,99);
     p.attr.SIQ=clamp(p.attr.SIQ+rf(0,0.28),25,97);
     if(chance(0.5)) p.attr.CLT=clamp(p.attr.CLT+rf(0,0.25),25,97);
     if(chance(0.5)) p.attr.CMP=clamp(p.attr.CMP+rf(0,0.30),25,97);
+    // ---- and LOCK the level: the year's fade is exactly what the math said, not a side-effect ----
+    p._lossYr=Math.round(loss*10)/10;                                       // surfaced on the recap — no stat ever leaves unexplained
+    scaleToOvr(p, clamp(Math.round(_ovr0-loss),30,99));
   }
   // ===== PASSIVE FREE-THROW GROWTH (MyPlayer only) =====
   // The free throw is a touch/repetition skill: it keeps climbing as a player ages, and it climbs fastest for
@@ -1007,7 +1377,57 @@ function developOneYear(p, opts){
 }
 
 /* ---------- Draft & league turnover ---------- */
-function genDraftClass(L){
+function _genDraftClassGM(L){
+  const cls=[];
+  // class strength varies year to year (weak → loaded), like real NBA draft classes
+  const roll=rand();
+  const cs = roll<0.12?'weak':roll<0.70?'avg':roll<0.93?'strong':'loaded';
+  const csCfg={weak:{blue:0,tierAdj:-1},avg:{blue:1,tierAdj:0},strong:{blue:2,tierAdj:0},loaded:{blue:3,tierAdj:1}}[cs];
+  const hasGen = chance(0.07);   // rare generational prospect (the tank target)
+  const pickArch=(i)=>{
+    if(i===0 && hasGen) return 'generational';
+    if(i<2+csCfg.blue) return chance(0.7)?'phenom':'project';
+    if(i<14) return weighted([['phenom',2],['project',3],['senior',2],['specialist',2],['intl',1]]);
+    if(i<30) return weighted([['senior',3],['specialist',3],['project',2],['intl',2],['twoway',1]]);
+    return weighted([['twoway',3],['specialist',2],['senior',2],['intl',1]]);
+  };
+  for(let i=0;i<60;i++){
+    let tier;
+    if(i<2)  tier = chance(0.65)?5:4;     // top-2: franchise ceiling
+    else if(i<5)  tier = chance(0.55)?4:3; // picks 3-5: clear separation
+    else if(i<9)  tier = ri(3,4);          // picks 6-9: lottery quality
+    else if(i<14) tier = ri(2,3);          // picks 10-14: late lottery
+    else if(i<22) tier = chance(0.3)?3:2;  // picks 15-22: mostly starters, rare lottery miss
+    else if(i<30) tier = ri(1,2);          // picks 23-30: late 1st
+    else if(i<45) tier = chance(0.08)?2:ri(0,1); // 2nd round: mostly fringe, rare gem
+    else tier = ri(0,1);
+    tier=clamp(tier+(i<14?csCfg.tierAdj:0),0,5);
+    // DRAFT-REALISM pass: the draft is not chalk — top picks occasionally BUST and late picks are
+    // occasionally hidden GEMS (Jokic at 41). This is what scouts live for; the slot model lacked it.
+    if(i<10){ if(chance(0.13) && tier>1) tier=clamp(tier-2,0,5); }              // ~13% of lottery picks fall well short
+    else if(i>=20 && i<48){ if(chance(0.10)) tier=clamp(tier+2,0,5); else if(chance(0.04)) tier=clamp(tier+3,0,5); }  // late-round steals
+    const arch=pickArch(i); const o={tier,archetype:arch};
+    if(arch==='generational'){ o.tier=5; o.prodigy=true; }
+    const p=genProspect(o);
+    p.draftYear=L.year; p.comp=prospectComp(p); p.story=prospectStory(p);
+    cls.push(p);
+  }
+  /* persistent name registry: every name the league has EVER seen (active, retired, past
+     draft classes, imported legends) is off-limits to new prospects — kills cross-year repeats */
+  L.usedNames=L.usedNames||{};
+  const _liveLast={};
+  for(const id in (L.players||{})){ const q=L.players[id]; if(q&&q.name){ L.usedNames[q.name]=1; if(!q.retired) _liveLast[_lastOf(q.name)]=1; } }
+  uniqueNames(cls, Object.keys(L.usedNames), Object.keys(_liveLast));   // avoid surnames of current league players
+  cls.forEach(p=>{ if(p&&p.name) L.usedNames[p.name]=1; });
+  // order by potential+ovr with noise (scouting uncertainty)
+  cls.sort((a,b)=>(b.potential+b.ovr+randn()*6)-(a.potential+a.ovr+randn()*6));
+  cls.forEach((p,i)=>p.mockRank=i+1);
+  cls.meta={strength:cs, generational:hasGen};
+  return cls;
+}
+function genDraftClass(L, opts){
+  opts = opts||{};
+  if(opts.gm) return _genDraftClassGM(L);
   const cls=[];
   for(let i=0;i<60;i++){
     let tier;
@@ -1031,8 +1451,9 @@ function genDraftClass(L){
   /* persistent name registry: every name the league has EVER seen (active, retired, past
      draft classes, imported legends) is off-limits to new prospects — kills cross-year repeats */
   L.usedNames=L.usedNames||{};
-  for(const id in (L.players||{})){ const q=L.players[id]; if(q&&q.name) L.usedNames[q.name]=1; }
-  uniqueNames(cls, Object.keys(L.usedNames));
+  const _liveLast={};
+  for(const id in (L.players||{})){ const q=L.players[id]; if(q&&q.name){ L.usedNames[q.name]=1; if(!q.retired) _liveLast[_lastOf(q.name)]=1; } }
+  uniqueNames(cls, Object.keys(L.usedNames), Object.keys(_liveLast));   // avoid surnames of current league players
   cls.forEach(p=>{ if(p&&p.name) L.usedNames[p.name]=1; });
   // order by potential+ovr with noise (scouting uncertainty)
   cls.sort((a,b)=>(b.potential+b.ovr+randn()*6)-(a.potential+a.ovr+randn()*6));
@@ -1040,17 +1461,13 @@ function genDraftClass(L){
   return cls;
 }
 function leagueOffseason(L){
-  // retire old / weak players, sign draftees to fill
-  for(const t of L.teams){
-    t.roster=t.roster.filter(id=>{
-      const p=L.players[id]; if(!p) return false;
-      if(p.isUser) return true;
-      if(p.age>=ri(36,42) || (p.age>=34&&p.ovr<73) || (p.age>=23&&p.ovr<69) || p.ovr<58){ p.retired=true; p.team=null; return false; }  /* NBA-quality floor: scrubs get waived */
-      return true;
-    });
-  }
+  /* ORDER MATTERS (aging parity, PJ 2026-07-14). This used to retire players FIRST and age them
+     second, so an NPC was judged on last season's age and last season's OVR — a free year that
+     MyPlayer (who ages in ageUp() and is judged after) never got. Now everyone plays the season,
+     ages, fades, and only THEN finds out whether anyone still wants them. Same order, same door. */
   // age & develop all — train varies by actual MPG, motor, and performance form
   for(const t of L.teams) rankRoster(L,t);  // ensure _sorted is fresh before perGame calls
+  setFloorRef(L);   // refresh the league-relative floor net off this season's rostered OVR (before anyone retires)
   for(const id in L.players){
     const p=L.players[id]; if(!p.retired && !p.isUser){
       // --- minutes factor: use actual roleOf MPG so stars/bench are precisely differentiated ---
@@ -1064,6 +1481,19 @@ function leagueOffseason(L){
       const train = clamp(mpgFactor*0.55 + mtrFactor*0.25 + formFactor*0.20, 0.10, 1.0);
       p.age++; developOneYear(p,{train});
     }
+  }
+  /* NOW the league decides who it still wants. floorForcesOut() is the SAME function MyPlayer is
+     judged by — the same min-OVR-per-age curve, the same single grace year (the last roster spot).
+     NPCs used to leave by a completely different rule (a random hard cap at 36-42, plus an
+     ovr<73-at-34 cut), which is exactly the parity break PJ called out. The only survivors of the
+     old rule are the ones that were never about age at all: young scrubs still get waived. */
+  for(const t of L.teams){
+    t.roster=t.roster.filter(id=>{
+      const p=L.players[id]; if(!p) return false;
+      if(p.isUser) return true;
+      if(floorForcesOut(p) || (p.age>=23&&p.ovr<69) || p.ovr<58 || p.age>=44){ p.retired=true; p.team=null; return false; }
+      return true;
+    });
   }
   // draft to refill
   const cls=genDraftClass(L);
@@ -1079,9 +1509,11 @@ function leagueOffseason(L){
     }
   }
   // free agent churn: ensure all teams have 12-14
+  L.usedNames=L.usedNames||{}; const _liveLast={};
+  for(const id in L.players){ const q=L.players[id]; if(q&&!q.retired&&q.name){ L.usedNames[q.name]=1; _liveLast[_lastOf(q.name)]=1; } }
   for(const t of L.teams){
     while(t.roster.filter(id=>L.players[id]&&!L.players[id].retired).length<12){
-      const p=genProspect({age:ri(24,30),tier:ri(1,3),startBoost:8}); matureToAge(p); if(p.ovr>76) scaleToOvr(p,ri(70,76));  p.team=t.id; addPlayer(L,p); t.roster.push(p.id);  /* fill with fringe NBA role players, not stars */
+      const p=genProspect({age:ri(24,30),tier:ri(1,3),startBoost:8}); matureToAge(p); if(p.ovr>76) scaleToOvr(p,ri(70,76));  uniqueNames([p], Object.keys(L.usedNames), Object.keys(_liveLast)); L.usedNames[p.name]=1; _liveLast[_lastOf(p.name)]=1;  p.team=t.id; addPlayer(L,p); t.roster.push(p.id);  /* fill with fringe NBA role players, not stars */
     }
     t.roster=t.roster.filter(id=>L.players[id]&&!L.players[id].retired);
     rankRoster(L,t);
@@ -1301,12 +1733,12 @@ function suggestPosition(p,age){
   lean=clamp((guard-big)/12,-1.3,1.3);
   const eff=ah - lean*1.4;   // a tall playmaker plays a hair smaller; a strong kid a hair bigger — but height dominates
   let primary,alt,reason;
-  if(eff>=83){ primary='C'; alt='PF'; reason='projects to tower over everyone — a true center'; }
+  if(eff>=83){ primary='C'; alt='PF'; reason='projects to tower over everyone, a true center'; }
   else if(eff>=80.5){ primary='PF'; alt=(ah>=82?'C':'SF'); reason='a powerful frame built for the frontcourt'; }
   else if(eff>=77.5){ primary='SF'; alt=(lean>0.3?'SG':'PF'); reason='wing size with room to fill out'; }
   else if(eff>=74.5){ primary='SG'; alt=(lean>0.2?'PG':'SF'); reason="a guard's build with scoring size"; }
   else if(eff>=71.5){ primary='PG'; alt='SG'; reason='a true lead-guard frame'; }
-  else { primary='PG'; alt='PG'; reason='one of the smallest on the floor — a pure point guard'; }
+  else { primary='PG'; alt='PG'; reason='one of the smallest on the floor, a pure point guard'; }
   return {primary,alt,reason,projHt:Math.round(ah)};
 }
 /* training: projected attribute gain for one training point */
@@ -1385,25 +1817,25 @@ function hallTier(v){
 /* A fictional all-time ladder — 20 invented legends, best to worst. Ranking is BOARD_POINTS; the stat lines are flavor. */
 const LEGENDS=[
   {name:"LeBrawn James",nick:"Kingdom",num:17,pos:"SF",ht:"6'9\"",era:"The Player-Empowerment Era",bio:"A do-everything forward who won across three franchises and was still the best player alive in his twentieth season.",res:{champ:4,fmvp:4,mvp:4,dpoy:0,al1:13,al2:3,al3:1,allStar:20,scoringTitle:1,roy:1,pts:41972,reb:11599,ast:11407,stl:2281,blk:1121,seasons:21,peakOvr:98}},
-  {name:"Michael Jordache",nick:"Air Mail",num:10,pos:"SG",ht:"6'6\"",era:"The Golden Age",bio:"Six titles, six Finals MVPs, never once lost on the final stage \u2014 the killer every scorer is still measured against.",res:{champ:6,fmvp:6,mvp:5,dpoy:1,al1:10,al2:0,al3:0,allStar:14,scoringTitle:7,roy:1,pts:31067,reb:6418,ast:5419,stl:2418,blk:859,seasons:15,peakOvr:99}},
-  {name:"Kareem Abdul-Jammar",nick:"Sky Hook",num:42,pos:"C",ht:"7'2\"",era:"The Skyhook Era",bio:"An unblockable hook from the left block and six rings across two decades \u2014 the scoring king of his time.",res:{champ:6,fmvp:2,mvp:6,dpoy:0,al1:10,al2:5,al3:0,allStar:19,scoringTitle:2,roy:1,pts:40348,reb:18329,ast:5949,stl:1219,blk:3352,seasons:20,peakOvr:98}},
+  {name:"Michael Jordache",nick:"Air Mail",num:10,pos:"SG",ht:"6'6\"",era:"The Golden Age",bio:"Six titles, six Finals MVPs, never once lost on the final stage, the killer every scorer is still measured against.",res:{champ:6,fmvp:6,mvp:5,dpoy:1,al1:10,al2:0,al3:0,allStar:14,scoringTitle:7,roy:1,pts:31067,reb:6418,ast:5419,stl:2418,blk:859,seasons:15,peakOvr:99}},
+  {name:"Kareem Abdul-Jammar",nick:"Sky Hook",num:42,pos:"C",ht:"7'2\"",era:"The Skyhook Era",bio:"An unblockable hook from the left block and six rings across two decades, the scoring king of his time.",res:{champ:6,fmvp:2,mvp:6,dpoy:0,al1:10,al2:5,al3:0,allStar:19,scoringTitle:2,roy:1,pts:40348,reb:18329,ast:5949,stl:1219,blk:3352,seasons:20,peakOvr:98}},
   {name:"Bill Russo",nick:"The Anchor",num:14,pos:"C",ht:"6'10\"",era:"The Dynasty Era",bio:"Nine banners built on defense, rebounding and pure will. Winning was the only number he ever cared about.",res:{champ:9,fmvp:0,mvp:5,dpoy:2,al1:3,al2:8,al3:0,allStar:12,scoringTitle:0,roy:0,pts:13694,reb:20388,ast:3866,stl:0,blk:0,seasons:13,peakOvr:96}},
   {name:"Majik Johnson",nick:"The Showman",num:5,pos:"PG",ht:"6'9\"",era:"The Fast-Break Era",bio:"A point guard in a forward's frame who turned the break into theater and the no-look pass into an art form.",res:{champ:5,fmvp:3,mvp:3,dpoy:0,al1:9,al2:1,al3:0,allStar:12,scoringTitle:0,roy:0,pts:18911,reb:7007,ast:10831,stl:1841,blk:399,seasons:13,peakOvr:97}},
   {name:"Wilt Chambers",nick:"The Colossus",num:21,pos:"C",ht:"7'1\"",era:"The Territorial Era",bio:"A force of nature who once dropped a hundred in a night and owned the glass like no one before or since.",res:{champ:2,fmvp:1,mvp:4,dpoy:0,al1:7,al2:3,al3:0,allStar:13,scoringTitle:7,roy:1,pts:29251,reb:22273,ast:4323,stl:0,blk:0,seasons:14,peakOvr:99}},
   {name:"Larry Birdman",nick:"The Hick",num:19,pos:"SF",ht:"6'9\"",era:"The Rivalry Era",bio:"A trash-talking marksman who'd tell you the shot was going in, then bury it right in your face.",res:{champ:3,fmvp:2,mvp:3,dpoy:0,al1:9,al2:1,al3:0,allStar:12,scoringTitle:0,roy:1,pts:22772,reb:9378,ast:5951,stl:1626,blk:789,seasons:13,peakOvr:96}},
-  {name:"Tim Dunkin",nick:"Bedrock",num:20,pos:"PF",ht:"6'11\"",era:"The Quiet-Dynasty Era",bio:"Five rings and zero drama \u2014 a bank-shot metronome and the most bankable big the game has produced.",res:{champ:5,fmvp:3,mvp:2,dpoy:0,al1:10,al2:3,al3:2,allStar:15,scoringTitle:0,roy:1,pts:25807,reb:14699,ast:4117,stl:998,blk:2941,seasons:19,peakOvr:97}},
-  {name:"Shaquille O'Kneel",nick:"Big Rig",num:44,pos:"C",ht:"7'1\"",era:"The Paint-Dominance Era",bio:"The most physically overwhelming center ever to play \u2014 bent rims, drew triple-teams, ate every single night.",res:{champ:4,fmvp:3,mvp:1,dpoy:0,al1:8,al2:2,al3:4,allStar:15,scoringTitle:2,roy:1,pts:30258,reb:13859,ast:3202,stl:782,blk:2893,seasons:19,peakOvr:98}},
-  {name:"Colby Bryant",nick:"The Closer",num:9,pos:"SG",ht:"6'6\"",era:"The Assassin Era",bio:"A footwork surgeon and stone-cold closer \u2014 five titles and a killer instinct that terrified a generation.",res:{champ:5,fmvp:2,mvp:1,dpoy:0,al1:11,al2:2,al3:2,allStar:18,scoringTitle:2,roy:0,pts:31927,reb:6688,ast:5984,stl:1846,blk:607,seasons:20,peakOvr:98}},
-  {name:"Hakeem Olajawon",nick:"Dreamshake",num:45,pos:"C",ht:"7'0\"",era:"The Two-Way Era",bio:"A dream of footwork on both ends \u2014 he'd dance past you, then swat you on the same trip down the floor.",res:{champ:2,fmvp:2,mvp:1,dpoy:2,al1:6,al2:3,al3:3,allStar:12,scoringTitle:0,roy:0,pts:28592,reb:14587,ast:3247,stl:2294,blk:4064,seasons:18,peakOvr:97}},
+  {name:"Tim Dunkin",nick:"Bedrock",num:20,pos:"PF",ht:"6'11\"",era:"The Quiet-Dynasty Era",bio:"Five rings and zero drama, a bank-shot metronome and the most bankable big the game has produced.",res:{champ:5,fmvp:3,mvp:2,dpoy:0,al1:10,al2:3,al3:2,allStar:15,scoringTitle:0,roy:1,pts:25807,reb:14699,ast:4117,stl:998,blk:2941,seasons:19,peakOvr:97}},
+  {name:"Shaquille O'Kneel",nick:"Big Rig",num:44,pos:"C",ht:"7'1\"",era:"The Paint-Dominance Era",bio:"The most physically overwhelming center ever to play, bent rims, drew triple-teams, ate every single night.",res:{champ:4,fmvp:3,mvp:1,dpoy:0,al1:8,al2:2,al3:4,allStar:15,scoringTitle:2,roy:1,pts:30258,reb:13859,ast:3202,stl:782,blk:2893,seasons:19,peakOvr:98}},
+  {name:"Colby Bryant",nick:"The Closer",num:9,pos:"SG",ht:"6'6\"",era:"The Assassin Era",bio:"A footwork surgeon and stone-cold closer, five titles and a killer instinct that terrified a generation.",res:{champ:5,fmvp:2,mvp:1,dpoy:0,al1:11,al2:2,al3:2,allStar:18,scoringTitle:2,roy:0,pts:31927,reb:6688,ast:5984,stl:1846,blk:607,seasons:20,peakOvr:98}},
+  {name:"Hakeem Olajawon",nick:"Dreamshake",num:45,pos:"C",ht:"7'0\"",era:"The Two-Way Era",bio:"A dream of footwork on both ends, he'd dance past you, then swat you on the same trip down the floor.",res:{champ:2,fmvp:2,mvp:1,dpoy:2,al1:6,al2:3,al3:3,allStar:12,scoringTitle:0,roy:0,pts:28592,reb:14587,ast:3247,stl:2294,blk:4064,seasons:18,peakOvr:97}},
   {name:"Chef Currie",nick:"Downtown",num:11,pos:"PG",ht:"6'2\"",era:"The Range Revolution",bio:"The shooter who broke the math of the sport, launching from the logo and dragging the whole league to the arc.",res:{champ:4,fmvp:1,mvp:2,dpoy:0,al1:4,al2:4,al3:1,allStar:10,scoringTitle:2,roy:0,pts:22674,reb:4407,ast:5943,stl:1437,blk:192,seasons:15,peakOvr:97}},
-  {name:"Kevin Durantula",nick:"Nightfall",num:7,pos:"SF",ht:"6'11\"",era:"The Positionless Era",bio:"A seven-footer with a guard's release \u2014 give him a sliver of daylight and it was already three points.",res:{champ:2,fmvp:2,mvp:1,dpoy:0,al1:6,al2:4,al3:0,allStar:14,scoringTitle:4,roy:1,pts:29957,reb:7851,ast:4648,stl:1343,blk:1343,seasons:17,peakOvr:98}},
-  {name:"Oscar Robotson",nick:"The Original",num:16,pos:"PG",ht:"6'5\"",era:"The Original All-Rounder",bio:"Averaged a triple-double before the league had a word for it \u2014 the template every point-forward still copies.",res:{champ:1,fmvp:0,mvp:1,dpoy:0,al1:9,al2:2,al3:0,allStar:12,scoringTitle:0,roy:1,pts:25857,reb:7554,ast:9571,stl:0,blk:0,seasons:14,peakOvr:96}},
-  {name:"Jerry Westward",nick:"Ice",num:12,pos:"SG",ht:"6'2\"",era:"The Cold-Blooded Era",bio:"Ice in the veins with the game on the line \u2014 the blueprint the modern shooting guard was drawn from.",res:{champ:1,fmvp:1,mvp:0,dpoy:0,al1:10,al2:2,al3:0,allStar:14,scoringTitle:1,roy:0,pts:26552,reb:5656,ast:6578,stl:0,blk:0,seasons:14,peakOvr:95}},
-  {name:"Karl Mailone",nick:"The Iron",num:32,pos:"PF",ht:"6'9\"",era:"The Workhorse Era",bio:"Never missed a night, never stopped running the floor \u2014 two decades of buckets on sheer relentlessness.",res:{champ:0,fmvp:0,mvp:2,dpoy:0,al1:11,al2:2,al3:1,allStar:14,scoringTitle:0,roy:0,pts:34676,reb:14056,ast:4928,stl:1958,blk:1076,seasons:19,peakOvr:96}},
-  {name:"Dirk Swishinski",nick:"The Lighthouse",num:40,pos:"PF",ht:"7'0\"",era:"The Stretch-Big Era",bio:"A seven-footer with a one-legged fadeaway nobody ever solved \u2014 he pulled bigs out to the perimeter forever.",res:{champ:1,fmvp:1,mvp:1,dpoy:0,al1:4,al2:5,al3:3,allStar:14,scoringTitle:0,roy:0,pts:33043,reb:12029,ast:3823,stl:944,blk:1341,seasons:21,peakOvr:95}},
+  {name:"Kevin Durantula",nick:"Nightfall",num:7,pos:"SF",ht:"6'11\"",era:"The Positionless Era",bio:"A seven-footer with a guard's release, give him a sliver of daylight and it was already three points.",res:{champ:2,fmvp:2,mvp:1,dpoy:0,al1:6,al2:4,al3:0,allStar:14,scoringTitle:4,roy:1,pts:29957,reb:7851,ast:4648,stl:1343,blk:1343,seasons:17,peakOvr:98}},
+  {name:"Oscar Robotson",nick:"The Original",num:16,pos:"PG",ht:"6'5\"",era:"The Original All-Rounder",bio:"Averaged a triple-double before the league had a word for it, the template every point-forward still copies.",res:{champ:1,fmvp:0,mvp:1,dpoy:0,al1:9,al2:2,al3:0,allStar:12,scoringTitle:0,roy:1,pts:25857,reb:7554,ast:9571,stl:0,blk:0,seasons:14,peakOvr:96}},
+  {name:"Jerry Westward",nick:"Ice",num:12,pos:"SG",ht:"6'2\"",era:"The Cold-Blooded Era",bio:"Ice in the veins with the game on the line, the blueprint the modern shooting guard was drawn from.",res:{champ:1,fmvp:1,mvp:0,dpoy:0,al1:10,al2:2,al3:0,allStar:14,scoringTitle:1,roy:0,pts:26552,reb:5656,ast:6578,stl:0,blk:0,seasons:14,peakOvr:95}},
+  {name:"Karl Mailone",nick:"The Iron",num:32,pos:"PF",ht:"6'9\"",era:"The Workhorse Era",bio:"Never missed a night, never stopped running the floor, two decades of buckets on sheer relentlessness.",res:{champ:0,fmvp:0,mvp:2,dpoy:0,al1:11,al2:2,al3:1,allStar:14,scoringTitle:0,roy:0,pts:34676,reb:14056,ast:4928,stl:1958,blk:1076,seasons:19,peakOvr:96}},
+  {name:"Dirk Swishinski",nick:"The Lighthouse",num:40,pos:"PF",ht:"7'0\"",era:"The Stretch-Big Era",bio:"A seven-footer with a one-legged fadeaway nobody ever solved, he pulled bigs out to the perimeter forever.",res:{champ:1,fmvp:1,mvp:1,dpoy:0,al1:4,al2:5,al3:3,allStar:14,scoringTitle:0,roy:0,pts:33043,reb:12029,ast:3823,stl:944,blk:1341,seasons:21,peakOvr:95}},
   {name:"Giannis Antetokoumpo",nick:"The Alphabet",num:22,pos:"PF",ht:"6'11\"",era:"The Freak Era",bio:"A two-way hurricane who crossed the floor in two dribbles and turned the paint into a no-fly zone.",res:{champ:1,fmvp:1,mvp:2,dpoy:1,al1:6,al2:1,al3:0,allStar:8,scoringTitle:0,roy:0,pts:17982,reb:7973,ast:3791,stl:683,blk:826,seasons:12,peakOvr:97}},
-  {name:"Charles Barksalot",nick:"Sir Charge",num:4,pos:"PF",ht:"6'6\"",era:"The Undersized-Giant Era",bio:"Too short to rule the glass, so he ruled it anyway \u2014 a bruising rebounding force with a soft jumper.",res:{champ:0,fmvp:0,mvp:1,dpoy:0,al1:5,al2:5,al3:1,allStar:11,scoringTitle:0,roy:0,pts:24446,reb:12911,ast:4337,stl:1696,blk:914,seasons:16,peakOvr:95}},
-  {name:"Allen Answerson",nick:"Crossover",num:1,pos:"PG",ht:"6'0\"",era:"The Heart-Over-Height Era",bio:"The smallest man on the floor and the bravest \u2014 took every hit and kept coming, bucket after bucket.",res:{champ:0,fmvp:0,mvp:1,dpoy:0,al1:3,al2:3,al3:1,allStar:11,scoringTitle:4,roy:1,pts:23322,reb:3248,ast:5382,stl:1898,blk:157,seasons:14,peakOvr:95}}
+  {name:"Charles Barksalot",nick:"Sir Charge",num:4,pos:"PF",ht:"6'6\"",era:"The Undersized-Giant Era",bio:"Too short to rule the glass, so he ruled it anyway, a bruising rebounding force with a soft jumper.",res:{champ:0,fmvp:0,mvp:1,dpoy:0,al1:5,al2:5,al3:1,allStar:11,scoringTitle:0,roy:0,pts:24446,reb:12911,ast:4337,stl:1696,blk:914,seasons:16,peakOvr:95}},
+  {name:"Allen Answerson",nick:"Crossover",num:1,pos:"PG",ht:"6'0\"",era:"The Heart-Over-Height Era",bio:"The smallest man on the floor and the bravest, took every hit and kept coming, bucket after bucket.",res:{champ:0,fmvp:0,mvp:1,dpoy:0,al1:3,al2:3,al3:1,allStar:11,scoringTitle:4,roy:1,pts:23322,reb:3248,ast:5382,stl:1898,blk:157,seasons:14,peakOvr:95}}
 ];
 const BOARD_POINTS=[8950,8650,8450,7950,7750,7500,7300,7150,6950,6800,6550,6350,6100,5800,5550,5300,5050,4750,4450];
 function allTimeBoard(){
@@ -1554,10 +1986,12 @@ const Engine = {
   genName, uniqueNames, genProspect, genLeaguePlayer, ovrOf, ovrAtPos, assignPositions, posOvrAt, canPlayPos, idx, computeStyles, roleOf, perGame,
   SBADGES, SBADGE_TIERS, recomputeSpecialBadges, unicornActive, sbadgeBonus, sbadgeOvrBonus, badgeOvrBonus, SB_GATE_STATS, sbScore,
   genLeague, teamStrength, simSeason, simGame, simPlayerSeason, runAwards, simPlayoffs, playSeason, projLine,
-  developOneYear, leagueOffseason, genDraftClass, matureToAge, rankRoster,
+  developOneYear, leagueOffseason, genDraftClass, matureToAge, rankRoster, scaleToOvr,
+  ARCHETYPES, NBA_COMPS, PROSPECT_HOMES, prospectComp, prospectStory, weighted,
   legacyScore, hofTier, genAllTimeBoard, TEAM_DATA, newCareer, newAwards,
   FATHERS, MOTHERS, TRAIT_BUMP, BLOOD_CATS, BLOODLINE, applyBloodline, bloodlinePreview, randomBloodline,
-  DAD_CATS, DADS, MOM_CATS, MOMS, applyParents, parentsPreview, randomParents, COLLEGES, predictAdultHeight, avgHeightForAge, inToFt, heightAtAge, frameOf, attrFrameMult, suggestPosition,
+  DAD_CATS, DADS, MOM_CATS, MOMS, applyParents, parentsPreview, randomParents, COLLEGES, predictAdultHeight, avgHeightForAge, inToFt, heightAtAge, frameOf, attrFrameMult, suggestPosition, declineAgeOf,
+  athIndexOf, declMultOf, declineProject, fadeProject, CLOCK_SEAL_AGE, ROSTER_FLOOR, rosterFloor, floorCredit, rosterFloorFor, floorForcesOut,
   attrCap, attrPotCap, trainGain, trainPoints, ACC, COLLEGE_ACC, STAT_MILES, hallPointsFromResume, resumeFromPlayer, hallPoints, hallTier, LEGENDS, allTimeBoard
 };
 if (typeof module !== 'undefined' && module.exports) module.exports = Engine;
@@ -1678,7 +2112,7 @@ function pickValue(L,pk){
 function pickLabel(L,pk){
   const t=L.teams[pk.orig]; const slot=pickSlot(L,pk);
   const tier=pk.rd===1?(slot<=4?'lottery':slot<=14?'mid-1st':'late-1st'):'2nd-rd';
-  return `${pk.y} ${pk.rd===1?'1st':'2nd'} — ${t.abbr} (proj ~#${pk.rd===1?slot:slot+30}, ${tier})`;
+  return `${pk.y} ${pk.rd===1?'1st':'2nd'}, ${t.abbr} (proj ~#${pk.rd===1?slot:slot+30}, ${tier})`;
 }
 
 /* ---------------- economy init ---------------- */
@@ -1728,9 +2162,9 @@ function capHealth(L,t){
   score-= lockedBig>=3?2 : lockedBig>=2?1 : 0;                                    // over-committed
   const grade= score>=4?'A' : score>=3?'B+' : score>=2?'B' : score>=1?'C' : score>=0?'D' : 'F';
   const col= score>=3?'var(--g-win)' : score>=1?'var(--g-gold)' : 'var(--g-lose)';
-  const note= score>=4?'Loaded with flexibility — room to add and assets to move.'
-    : score>=2?'Healthy books — you can make a move when you need to.'
-    : score>=0?'Tight — little room and few expirings to leverage.'
+  const note= score>=4?'Loaded with flexibility, room to add and assets to move.'
+    : score>=2?'Healthy books, you can make a move when you need to.'
+    : score>=0?'Tight, little room and few expirings to leverage.'
     : 'Capped out and locked in. You\'ll need to shed money to improve.';
   return {grade,col,note,room,expPts,lockedBig};
 }
@@ -1755,7 +2189,7 @@ const GM_PERSONAS={
   hoarder: {name:'Asset hoarder', icon:'🗄️', blurb:'Hoards draft picks and young upside; pries your future cheap.'},
   frugal:  {name:'Penny-pincher', icon:'💸', blurb:'Wants to shed points; loves taking expiring deals off your hands.'},
   homer:   {name:'Loyalist',      icon:'🛡️', blurb:'Clings to his own core; tough to pry his guys, easygoing otherwise.'},
-  balanced:{name:'Steady hand',   icon:'⚖️', blurb:'Fair-minded — values talent straight up and bargains reasonably.'}
+  balanced:{name:'Steady hand',   icon:'⚖️', blurb:'Fair-minded, values talent straight up and bargains reasonably.'}
 };
 function gmPersona(L,t){
   if(!t) return 'balanced';
@@ -1843,26 +2277,26 @@ function evalDeal(L,deal){
   let counter=null;
   if(!accept && legalUser && legalOther && deal.get.length>0 && need2>0 && need2<=22){
     counter={ short:need2, // user must add ~need2 value
-      msg: need2<=4?`Add a small sweetener (~${need2} value — a 2nd-round pick or a bench piece) and we have a deal.`
-          : need2<=10?`We're close. Add about ${need2} more value — a rotation player or a mid pick.`
-          : `Get us roughly ${need2} more value — a starter, a young piece, or a first-round pick.` };
+      msg: need2<=4?`Add a small sweetener (~${need2} value, a 2nd-round pick or a bench piece) and we have a deal.`
+          : need2<=10?`We're close. Add about ${need2} more value, a rotation player or a mid pick.`
+          : `Get us roughly ${need2} more value, a starter, a young piece, or a first-round pick.` };
   }
   const pName = persona&&GM_PERSONAS[persona]?GM_PERSONAS[persona].name:'';
   let reason='';
-  if(!salUser) reason='That puts you over the 100-point cap — send out more points to make room.';
-  else if(!rosUser) reason='That leaves your roster too thin — get a player back too (or trade fewer away).';
-  else if(!rosOther) reason=`${oT.abbr} would blow past the ${MAXROST}-man roster limit — they need a player back too.`;
-  else if(!salOther) reason=`${oT.abbr} can’t fit that under their 100-point cap — send them fewer points.`;
+  if(!salUser) reason='That puts you over the 100-point cap, send out more points to make room.';
+  else if(!rosUser) reason='That leaves your roster too thin, get a player back too (or trade fewer away).';
+  else if(!rosOther) reason=`${oT.abbr} would blow past the ${MAXROST}-man roster limit, they need a player back too.`;
+  else if(!salOther) reason=`${oT.abbr} can’t fit that under their 100-point cap, send them fewer points.`;
   else if(thresh>=1.4 && inAdj<outAdj*thresh) reason=`${oT.abbr}${pName?' ('+pName+')':''} won’t part with their franchise player for that.`;
   else if(inAdj<outAdj*thresh){ // use the counter message if we have one, else generic
     reason = counter?counter.msg
-      : (need2>16?`Not close — ${oT.abbr} wants a lot more.`:`${oT.abbr} needs more value — add a pick or a rotation player.`); }
+      : (need2>16?`Not close, ${oT.abbr} wants a lot more.`:`${oT.abbr} needs more value, add a pick or a rotation player.`); }
   else { // accepting — flavour the yes by persona/direction
-    reason = persona==='shark'?`${oT.abbr} are all-in to win now — they’ll do it. Deal!`
+    reason = persona==='shark'?`${oT.abbr} are all-in to win now, they’ll do it. Deal!`
       : persona==='hoarder'?`${oT.abbr} love the young assets/picks. Deal!`
       : persona==='frugal'?`${oT.abbr} are happy to clear the books. Deal!`
       : dir==='rebuild'?`${oT.abbr} is rebuilding and likes the youth/picks. Deal!`
-      : dir==='contend'?`${oT.abbr} is win-now and likes it. Deal!`:`Fair deal — ${oT.abbr} accepts.`; }
+      : dir==='contend'?`${oT.abbr} is win-now and likes it. Deal!`:`Fair deal, ${oT.abbr} accepts.`; }
   return {accept, inAdj:Math.round(inAdj*10)/10, outAdj:Math.round(outAdj*10)/10, legalUser, legalOther, salUser, rosUser, salOther, rosOther, reason, dir, persona, counter, valueShort:need2};
 }
 function executeTrade(L,deal){
@@ -2032,7 +2466,7 @@ function resolveFreeAgency(L,userTid,userOffers){
 
 /* ---------------- scouting + draft ---------------- */
 function genDraftClass(L){
-  const cls=E.genDraftClass(L);
+  const cls=E.genDraftClass(L,{gm:true});
   // origGrade = the public's read; trueGrade = hidden reality (gems beat it, busts fall short)
   cls.forEach(p=>{ p.origGrade=p.potential; p.trueGrade=p.potential; p.scout=0; p.workout=false; p.bust=false; p.gem=false; });
   // BUSTS: top picks who flame out (Bennett #1, Bargnani #1, Fultz #1, Oden #1). ~1 in 4 is catastrophic.
@@ -2096,7 +2530,7 @@ function hallToProspect(L,rec){
   p.scout=0; p.workout=false; p.gem=(p.trueGrade-p.consensus>=8); p.bust=false;
   p.name=rec.name; p.fromHall=true; p.hallPeak=peak; p.hallBadges=rec.badges||{};
   const _comps={PG:'a lead guard',SG:'a scoring wing',SF:'a two-way wing',PF:'a stretch forward',C:'an anchor big'};
-  p.comp=_comps[p.pos]||'a prospect'; p.story=`⭐ From your Hall — ${rec.identity||'your created legend'}`;
+  p.comp=_comps[p.pos]||'a prospect'; p.story=`⭐ From your Hall, ${rec.identity||'your created legend'}`;
   p.draftYear=L.year;
   return p;
 }
@@ -2280,11 +2714,11 @@ function seedGMLegends(){
     {name:'Pat Rally', score:8850, rings:1, eoy:3, note:'The slick-suited closer who turned three different cities into contenders.'},
     {name:'Gregg Popvich', score:8300, rings:5, eoy:2, note:'Built a five-ring dynasty on defense, culture, and unselfish ball.'},
     {name:'R.C. Cola', score:7700, rings:5, eoy:4, note:'Scoured the globe for hidden gems before international scouting was cool.'},
-    {name:'Sam Presto', score:7100, rings:1, eoy:3, note:'Pulled first-round picks out of thin air like a magician — a war chest without end.'},
+    {name:'Sam Presto', score:7100, rings:1, eoy:3, note:'Pulled first-round picks out of thin air like a magician, a war chest without end.'},
     {name:'Bob Buyers', score:6500, rings:4, eoy:2, note:'Built a champion around a revolution in three-point shooting.'},
-    {name:'Masai Uziri', score:6050, rings:1, eoy:2, note:'The fearless dealmaker who bet a whole season on one bold trade — and won it all.'},
-    {name:'Daryl Moreyball', score:5600, rings:0, eoy:2, note:'Turned the mid-range into a heresy — an analytics prophet before anyone believed.'},
-    {name:'Joe Dumar', score:5150, rings:1, eoy:1, note:'Won it all with grinders and grit — no superstars required.'},
+    {name:'Masai Uziri', score:6050, rings:1, eoy:2, note:'The fearless dealmaker who bet a whole season on one bold trade, and won it all.'},
+    {name:'Daryl Moreyball', score:5600, rings:0, eoy:2, note:'Turned the mid-range into a heresy, an analytics prophet before anyone believed.'},
+    {name:'Joe Dumar', score:5150, rings:1, eoy:1, note:'Won it all with grinders and grit, no superstars required.'},
     {name:'Jerry Clause', score:4700, rings:6, eoy:2, note:'Insisted the front office, not the superstar, is what really hangs banners.'},
     {name:'Donnie Waltz', score:4250, rings:0, eoy:1, note:'A cap-space maestro who waltzed his way to room for a superteam.'},
     {name:'Danny Angel', score:3950, rings:5, eoy:1, note:'A relentless collector of talent, always three moves ahead of the room.'},
@@ -2353,12 +2787,12 @@ var VIEWS={};
 VIEWS.overview=function(){
   var engineFns=Object.keys(E||{}).length, gmFns=Object.keys(GM||{}).length;
   main.innerHTML=
-  '<h2>System Overview</h2><div class="sub2">Static analysis of the deployed build + live introspection of the embedded engine.</div>'+
+  '<h2>System Overview</h2><div class="sub2">Static analysis of the deployed build (v2, 2026-07) + live introspection of the embedded engine.</div>'+
   '<div class="tiles">'+
-   '<div class="tile"><div class="v">14,912</div><div class="l">lines · one HTML file</div></div>'+
-   '<div class="tile"><div class="v">1.46 MB</div><div class="l">total payload</div></div>'+
-   '<div class="tile"><div class="v gold">~1,050</div><div class="l">function declarations</div></div>'+
-   '<div class="tile"><div class="v gold">0</div><div class="l">external JS deps</div></div>'+
+   '<div class="tile"><div class="v">15,594</div><div class="l">lines · one HTML file</div></div>'+
+   '<div class="tile"><div class="v">1.89 MB</div><div class="l">payload (fonts inlined)</div></div>'+
+   '<div class="tile"><div class="v gold">~1,060</div><div class="l">function declarations</div></div>'+
+   '<div class="tile"><div class="v gold">0</div><div class="l">external deps — fully offline</div></div>'+
    '<div class="tile"><div class="v cyan">'+engineFns+'</div><div class="l">HOPEngine exports (live)</div></div>'+
    '<div class="tile"><div class="v cyan">'+gmFns+'</div><div class="l">HOPGM exports (live)</div></div>'+
    '<div class="tile"><div class="v mag">'+E.ATTRS.length+'</div><div class="l">player attributes</div></div>'+
@@ -2368,27 +2802,32 @@ VIEWS.overview=function(){
    '<div class="tile"><div class="v gold">100+100</div><div class="l">dads · moms pool</div></div>'+
    '<div class="tile"><div class="v gold">5×20</div><div class="l">bloodline trait grid</div></div>'+
   '</div>'+
+  '<div class="panel"><div class="ph">Build 2 — what changed</div>'+
+   '<div class="note"><b>✓ Engine fork MERGED.</b> GM mode now reads the one shared HOPEngine — the old duplicated copy is gone. (Was improvement #1 on the review list.)</div>'+
+   '<div class="note"><b>✓ Fonts self-hosted</b> as inline woff2 — Google Fonts removed; the game is now 100% offline-capable.</div>'+
+   '<div class="note"><b>New systems:</b> The Empire Tree (full money overhaul — towers/floors/capstones) · The Record Book (breakable game/season/career records held by the legends) · March Madness rebuilt with earned seeding &amp; live odds · Transfer Portal · body-based training costs · a real aging/decline model (declineProject, CLOCK_SEAL_AGE) · prospect backstories with player comps.</div>'+
+  '</div>'+
   '<div class="panel"><div class="ph">Architecture — one file, three strata</div><div class="arch">'+
-   '<div class="abox"><h4>PLAYER MODE <span class="dim">· lines 596–6020</span></h4><ul>'+
-    '<li><b>HOPEngine copy A</b> — pure-logic league sim (no DOM)</li>'+
+   '<div class="abox"><h4>PLAYER MODE <span class="dim">· lines 740–7890</span></h4><ul>'+
+    '<li><b>HOPEngine</b> — the ONE shared pure-logic league sim</li>'+
     '<li>genetics → childhood → HS → college → draft → pro → Hall</li>'+
-    '<li>procedural event generator (30+ templates × 32 skills)</li>'+
+    '<li>Empire Tree · Record Book · March Madness · Transfer Portal</li>'+
     '<li>reputation/loyalty · minigames (meter/reaction/mash/rhythm/wheel)</li></ul></div>'+
-   '<div class="abox"><h4>GM MODE <span class="dim">· lines 6023–13657</span></h4><ul>'+
-    '<li><b>HOPEngine copy B</b> — the diverged fork (⚠ 671 diff lines)</li>'+
+   '<div class="abox"><h4>GM MODE <span class="dim">· lines 7893–14300</span></h4><ul>'+
+    '<li>reads the <b>shared HOPEngine</b> (fork merged in build 2 ✓)</li>'+
     '<li><b>HOPGM</b> — CBA cap-points, scouting fog, trade surplus-value</li>'+
     '<li>trade center · offer-first finder · FA pitches · draft war room</li>'+
     '<li>7 feature "batches" bolted on over time</li></ul></div>'+
-   '<div class="abox"><h4>META MODULES <span class="dim">· lines 13659–14910</span></h4><ul>'+
+   '<div class="abox"><h4>META MODULES <span class="dim">· lines 14304–15594</span></h4><ul>'+
     '<li><b>HOPAudio</b> — procedural chiptune, zero audio files</li>'+
     '<li><b>HOPGuide</b> — onboarding · <b>HOPA11y</b> — accessibility</li>'+
     '<li><b>HOPGloss</b> — jargon tooltips · <b>HOPUI</b> — theming</li>'+
     '<li><b>HOPClimb</b> — GM unlock ladder (MutationObserver pattern)</li></ul></div>'+
   '</div></div>'+
   '<div class="panel"><div class="ph">Analyst notes</div>'+
-   '<div class="note"><b>Engine fork:</b> both modes embed their own copy of the "shared core." Copy A has the special-badge system + expanded name pools; copy B does not. They drift further with every edit — merge candidate #1.</div>'+
-   '<div class="note"><b>Save format:</b> full league snapshot as JSON (~520 KB/slot) in localStorage. 6 slots ≈ 3 MB of a ~5 MB quota; failed saves are silently swallowed.</div>'+
-   '<div class="note"><b>Design gems:</b> scouting fog (market trades on <i>perceived</i> potential), diminishing-returns Hall scoring, variance-based genetics, three-door progression ladder (skill / effort / mercy).</div>'+
+   '<div class="note"><b>Remaining duplication:</b> the engine fork is merged, but a copy of the player game LAYER (title→create→childhood→…) still lives inside GM mode (~lines 8926–9846) — the last big dedupe target.</div>'+
+   '<div class="note"><b>Save format:</b> full league snapshot as JSON (~500 KB/slot) in localStorage. 6 slots ≈ 3 MB of a ~5 MB quota; failed saves are silently swallowed — export/backup still worth adding.</div>'+
+   '<div class="note"><b>Design gems:</b> scouting fog (market trades on <i>perceived</i> potential), diminishing-returns Hall scoring, variance-based genetics, three-door progression ladder (skill / effort / mercy), and now a body-based training economy.</div>'+
   '</div>'+
   '<div class="panel"><div class="ph">localStorage registry</div><div class="tblwrap"><table><tr><th>key</th><th>contents</th></tr>'+
    [['hop_save_v3_s1..3','Player careers — full league snapshot per slot'],
@@ -2406,28 +2845,35 @@ VIEWS.overview=function(){
 /* ---------- CODE MAP ---------- */
 VIEWS.codemap=function(){
   var rows=[
-   ['596','mode router','hopSetMode / goToGM — Player↔GM handoff incl. legacy payload'],
-   ['605–2032','HOPEngine (copy A)','names · 29 attrs · badges · league gen · season/playoff sim · awards · draft classes · genetics · parents · Hall points · 20 legends · public API'],
-   ['2034–3070','Player core','save slots · prefs · achievements · legend cards · icon system · minigame framework (meter/reaction/mash/rhythm/wheel + tutorials)'],
-   ['3071–3265','Title + Create','save-slot picker · parent/bloodline picker with live projection'],
-   ['3266–3530','Childhood + High school','ages 6–13 moments · JV/Varsity · AAU · dunk-contest showcase'],
-   ['3531–3777','Recruiting → Draft','college offers (recruitScore) · NCAA seasons · stay-or-go · draft stock'],
-   ['3778–5203','Pro career','season hub · contracts · All-Star weekend · rep/loyalty ("Beloved"→"Snake") · lifestyle/brands'],
-   ['5204–5515','Retirement + Hall','resume scoring · tier verdict · all-time ladder placement'],
-   ['5516–6020','Content bank','procedural event templates + scripted arcs (childhood-heavy) · init'],
-   ['6023–7310','HOPEngine (copy B)','the fork — same core, no badges, smaller name pools'],
-   ['7314–8069','HOPGM engine','cap points CBA · marketValue/onCourt/playerValue · scouting fog (perceivedPotential) · pick assets · buildDeal/evalDeal/generateOffers · FA model · owner eval'],
-   ['8071–9744','GM game layer','mirrors player layer for the GM shell'],
-   ['9745–12072','GM UI','entry · season hub · inbox · roster · trade center · offer-first finder · staff · deadline→sim→results · off-season'],
-   ['12073–13573','Batches 1–7','coaching schemes · custom rosters · league browser · challenges (36) · meta/replay · storylines · scouting depth · trade depth · FA depth · in-season FA'],
-   ['13574–13657','Executive HoF','GM legacy scoring + __hopGM debug hook'],
-   ['13659–14035','HOPAudio','procedural Web Audio chiptune + SFX'],
-   ['14036–14175','HOPGuide','first-session onboarding, contextual hints'],
-   ['14176–14271','HOPA11y','text size · reduce motion · colorblind'],
-   ['14272–14374','HOPGloss','plain-language tooltips on jargon'],
-   ['14375–14474','HOPUI','theme bootstrap + quick settings'],
-   ['14475–14910','HOPClimb','10-rung GM unlock ladder; skill/effort/mercy doors; capture-phase click gating']];
-  main.innerHTML='<h2>Code Map</h2><div class="sub2">Section index of the single-file build (line numbers from the deployed source).</div>'+
+   ['33–62','embedded fonts','Inter/Fraunces/etc. inlined as base64 woff2 — no Google Fonts, fully offline (new in build 2)'],
+   ['143–738','theme + Empire Tree CSS','Marquee gold/serif skin · tower/floor visuals for the money tree'],
+   ['740','mode router','hopSetMode / goToGM — Player↔GM handoff incl. legacy payload'],
+   ['747–2603','HOPEngine (THE shared core)','names · 29 attrs · badges · league gen · season/playoff sim · awards · draft classes · genetics · parents · aging/decline model · prospect comps/stories · Hall points · 20 legends — single copy since build 2 ✓'],
+   ['2606–3187','Player core','save slots · prefs · achievements · legend cards · icons · minigame framework (meter/reaction/mash/rhythm/wheel + tutorials)'],
+   ['3189–3342','THE EMPIRE TREE ★','full money overhaul — money is the fuel, achievements are the gates, one capstone per branch (new)'],
+   ['3343–3847','THE RECORD BOOK ★','real-record numbers held by the parody legends · game/season/career scopes · breaking one is a career moment (new)'],
+   ['3848–4128','Title + Create','save-slot picker · parent/bloodline picker with live projection'],
+   ['4129–4432','Childhood + High school','ages 6–13 moments · JV/Varsity · AAU · dunk-contest showcase'],
+   ['4433–4658','Recruiting + College','college offers (recruitScore) · NCAA seasons · stay-or-go'],
+   ['4660–4878','MARCH MADNESS rebuilt ★','earned seeding · live per-round odds · playtest-3 fixes (new)'],
+   ['4880–4958','TRANSFER PORTAL ★','mid-college moves, rebuilt per playtest 3 (new)'],
+   ['4959–5083','Draft','stock model · draft night'],
+   ['5084–6273','Pro career','season hub · contracts · All-Star weekend · rep/loyalty ("Beloved"→"Snake") · lifestyle/brands'],
+   ['6274–7015','Training economy ★','rebuilt cost curve + body-based +1 pricing (height/frame-aware) (new)'],
+   ['7016–7331','Retirement + Hall','resume scoring · tier verdict · all-time ladder placement'],
+   ['7332–7890','Content bank','procedural event templates + scripted arcs · init'],
+   ['7897–8651','HOPGM engine','cap points CBA · marketValue/onCourt/playerValue · scouting fog (perceivedPotential) · pick assets · buildDeal/evalDeal/generateOffers · FA model · owner eval'],
+   ['8654–10329','GM game layer','GM shell — still carries a copy of the player game layer (last dedupe target)'],
+   ['10330–12654','GM UI','entry · season hub · inbox · roster · trade center · offer-first finder · staff · deadline→sim→results · off-season'],
+   ['12655–14155','Batches 1–7','coaching schemes · custom rosters · league browser · challenges · meta/replay · storylines · scouting depth · trade depth · FA depth · in-season FA'],
+   ['14156–14300','Executive HoF','GM legacy scoring + __hopGM debug hook'],
+   ['14304–14700','HOPAudio','procedural Web Audio chiptune + SFX'],
+   ['14702–14841','HOPGuide','first-session onboarding, contextual hints'],
+   ['14842–14937','HOPA11y','text size · reduce motion · colorblind'],
+   ['14938–15040','HOPGloss','plain-language tooltips on jargon'],
+   ['15041–15156','HOPUI','theme bootstrap + quick settings'],
+   ['15157–15594','HOPClimb','10-rung GM unlock ladder; skill/effort/mercy doors; capture-phase click gating']];
+  main.innerHTML='<h2>Code Map</h2><div class="sub2">Section index of the single-file build (line numbers from the deployed v2 source · ★ = new in build 2).</div>'+
    '<div class="panel"><div class="tblwrap"><table><tr><th>lines</th><th>section</th><th>what lives here</th></tr>'+
    rows.map(function(r){return '<tr><td class="cyan" style="white-space:nowrap">'+r[0]+'</td><td class="gold" style="white-space:nowrap">'+r[1]+'</td><td class="dim">'+r[2]+'</td></tr>';}).join('')+'</table></div></div>'+
    '<div class="panel"><div class="ph">HOPEngine — live export surface ('+Object.keys(E).length+')</div><div class="dim" style="word-break:break-word">'+Object.keys(E).sort().map(function(k){return '<span class="chip" onclick="HOPTERM(\'js E.'+k+'\')">'+k+'</span>';}).join('')+'</div></div>'+
@@ -2452,8 +2898,11 @@ VIEWS.terminal=function(){
       .map(function(a){return a[0]+':'+Math.round(a[1]);}).join('  ');
     var read=''; try{var r=GM.scoutRead(p); read='\n  scout read : <span class="k">'+r.grade+'</span> (per '+r.per+', range '+r.lo+'–'+r.hi+')';}catch(e){}
     var mv=''; try{mv='\n  market cost: <span class="g">'+GM.marketValue(p.ovr,p.age)+' cap pts</span> · trade value '+GM.playerValue(p);}catch(e){}
+    var comp=''; try{if(E.prospectComp){var c=E.prospectComp(p); if(c) comp='\n  comp       : <span class="mag">'+esc(typeof c==='string'?c:(c.name||JSON.stringify(c)))+'</span>';}}catch(e){}
+    var story=''; try{if(E.prospectStory){var s2=E.prospectStory(p); if(s2) story='\n  <span class="dim">'+esc((typeof s2==='string'?s2:JSON.stringify(s2)).slice(0,160))+'</span>';}}catch(e){}
+    var dec=''; try{if(E.declineAgeOf){dec='\n  decline age: '+E.declineAgeOf(p)+' <span class="dim">(new aging model)</span>';}}catch(e){}
     return '<span class="gold">'+esc(p.name)+'</span>  '+p.pos+' · '+ft(p.heightIn||p.adultHeight||78)+' · age '+p.age+
-      '\n  OVR <span class="g">'+p.ovr+'</span> / POT '+ (p.potential||'?')+'   top: <span class="dim">'+attrs+'</span>'+read+mv;
+      '\n  OVR <span class="g">'+p.ovr+'</span> / POT '+ (p.potential||'?')+'   top: <span class="dim">'+attrs+'</span>'+read+mv+comp+dec+story;
   }
   function standTable(res){
     function side(rows,conf){return '<b class="cyan">'+conf+'</b>\n'+rows.map(function(t,i){return String(i+1).padStart(2)+'. '+t.abbr.padEnd(4)+String(t.w).padStart(3)+'-'+t.l;}).join('\n');}

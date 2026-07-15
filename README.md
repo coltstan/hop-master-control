@@ -1,7 +1,7 @@
 # HOP://MASTER-CONTROL
 
 An engineering cockpit for **Hall of Paths** (the basketball life-sim at
-https://visionary-lolly-3d978a.netlify.app/).
+https://hallofpaths.netlify.app/).
 
 **▶ Use it here: https://coltstan.github.io/hop-master-control/**
 
